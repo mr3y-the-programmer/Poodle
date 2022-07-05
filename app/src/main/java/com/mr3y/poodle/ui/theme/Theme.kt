@@ -1,3 +1,4 @@
+// ktlint-disable filename
 package com.mr3y.poodle.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme

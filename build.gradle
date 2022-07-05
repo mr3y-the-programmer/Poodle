@@ -1,15 +1,25 @@
 buildscript {
-    ext {
-        compose_compiler_version = '1.2.0'
-        compose_version = '1.2.0-rc03'
-    }
+	ext {
+		compose_compiler_version = '1.2.0'
+		compose_version = '1.2.0-rc03'
+	}
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id 'com.android.application' version '7.2.1' apply false
-    id 'com.android.library' version '7.2.1' apply false
-    id 'org.jetbrains.kotlin.android' version '1.7.0' apply false
+	id 'com.android.application' version '7.2.1' apply false
+	id 'com.android.library' version '7.2.1' apply false
+	id 'org.jetbrains.kotlin.android' version '1.7.0' apply false
+	id 'org.jlleitschuh.gradle.ktlint' version '10.3.0'
+	id 'com.diffplug.spotless' version '6.8.0'
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+spotless {
+	format 'misc', {
+		// define the files to apply `misc` to
+		target '*.gradle', '*.md', '.gitignore'
+
+		// define the steps to apply to those files
+		trimTrailingWhitespace()
+		indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+		endWithNewline()
+	}
 }
