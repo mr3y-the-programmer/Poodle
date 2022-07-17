@@ -7,6 +7,8 @@ sealed interface EndPointQueryParameters {
     var text: String
 
     var limit: Int
+
+    fun clearQueryParameters()
 }
 
 object MavenCentralQueryParameters : EndPointQueryParameters {
@@ -25,7 +27,7 @@ object MavenCentralQueryParameters : EndPointQueryParameters {
 
     var containsClassFullyQualifiedName = ""
 
-    fun clearQueryParameters() {
+    override fun clearQueryParameters() {
         text = ""
         groupId = ""
         limit = 50
@@ -43,4 +45,10 @@ object JitPackQueryParameters : EndPointQueryParameters {
     override var text = ""
 
     override var limit = 50
+
+    override fun clearQueryParameters() {
+        groupId = ""
+        text = ""
+        limit = 50
+    }
 }
