@@ -1,25 +1,23 @@
 package com.mr3y.poodle.di
 
-import com.mr3y.poodle.network.datasources.JitPack
-import com.mr3y.poodle.network.datasources.JitPackImpl
-import com.mr3y.poodle.network.datasources.MavenCentral
-import com.mr3y.poodle.network.datasources.MavenCentralImpl
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class NetworkModule {
+object NetworkModule {
 
     @Singleton
     @Provides
@@ -28,6 +26,19 @@ abstract class NetworkModule {
             install(Logging) {
                 logger = Logger.ANDROID
                 level = LogLevel.HEADERS
+            }
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        ignoreUnknownKeys = true
+                        encodeDefaults = true
+                        isLenient = true
+                        allowSpecialFloatingPointValues = true
+                        allowStructuredMapKeys = true
+                        prettyPrint = false
+                        useArrayPolymorphism = false
+                    }
+                )
             }
             engine {
                 config {
@@ -44,10 +55,4 @@ abstract class NetworkModule {
     @JitPackBaseUrl
     @Provides
     fun provideJitPackBaseUrl(): String = "https://jitpack.io/api"
-
-    @Binds
-    abstract fun provideMavenCentralDataSource(mavenCentralImpl: MavenCentralImpl): MavenCentral
-
-    @Binds
-    abstract fun provideJitPackDataSource(jitPackImpl: JitPackImpl): JitPack
 }
