@@ -14,7 +14,6 @@ import com.mr3y.poodle.network.models.Result
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -23,8 +22,8 @@ class JitPackImplTest {
     @Test
     fun `given a normal serialized response & no query parameters, then verifies it deserializes the response correctly`() = runTest {
         createJitPackImplInstance(fakeJitPackSerializedResponse).getArtifacts { }.test {
-            assertEquals(Result.Loading, awaitItem())
-            assertEquals(Result.Success(fakeJitPackDeserializedResponse), awaitItem())
+            assertThat(awaitItem()).isEqualTo(Result.Loading)
+            assertThat(awaitItem()).isEqualTo(Result.Success(fakeJitPackDeserializedResponse))
             awaitComplete()
         }
     }
@@ -36,9 +35,9 @@ class JitPackImplTest {
             text = "Simple-stack"
             limit = 3
         }.test {
-            assertEquals(Result.Loading, awaitItem())
+            assertThat(awaitItem()).isEqualTo(Result.Loading)
             val expected = filteredFakeJitPackDeSerializedResponse.copy(artifacts = filteredFakeJitPackDeSerializedResponse.artifacts.slice(0..1))
-            assertEquals(Result.Success(expected), awaitItem())
+            assertThat(awaitItem()).isEqualTo(Result.Success(expected))
             awaitComplete()
         }
     }
@@ -48,8 +47,8 @@ class JitPackImplTest {
         createJitPackImplInstance(filteredFakeJitPackSerializedResponse).getArtifacts {
             text = "zhuinden"
         }.test {
-            assertEquals(Result.Loading, awaitItem())
-            assertEquals(Result.Success(filteredFakeJitPackDeSerializedResponse), awaitItem())
+            assertThat(awaitItem()).isEqualTo(Result.Loading)
+            assertThat(awaitItem()).isEqualTo(Result.Success(filteredFakeJitPackDeSerializedResponse))
             awaitComplete()
         }
     }
@@ -60,7 +59,7 @@ class JitPackImplTest {
             groupId = "com.github.zhuinden"
             text = "Simple-stack"
         }.test {
-            assertEquals(Result.Loading, awaitItem())
+            assertThat(awaitItem()).isEqualTo(Result.Loading)
             assertThat(awaitItem()).isInstanceOf(Result.Error::class.java)
             awaitComplete()
         }
