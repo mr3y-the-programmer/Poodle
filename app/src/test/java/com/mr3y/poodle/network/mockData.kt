@@ -86,6 +86,40 @@ internal val fakeMavenCentralSerializedResponse = """
     }
 """.trimIndent()
 
+internal val invalidMavenCentralSerializedResponse = """
+    {
+      "numFound": 2,
+      "start": 0,
+      "docs": [
+        {
+          "id": "io.github.a914-gowtham:compose-ratingbar",
+          "g": "io.github.a914-gowtham",
+          "a": "compose-ratingbar",
+          "latestVersion": "1.2.3",
+          "repositoryId": "central",
+          "p": "aar",
+          "timestamp": 1644000428000,
+          "versionCount": 13,
+          "text": [
+            "io.github.a914-gowtham",
+            "compose-ratingbar",
+            "-javadoc.jar",
+            "-sources.jar",
+            ".aar",
+            ".module",
+            ".pom"
+          ],
+          "ec": [
+            "-javadoc.jar",
+            "-sources.jar",
+            ".aar",
+            ".module",
+            ".pom"
+          ]
+        },
+    }
+""".trimIndent()
+
 internal val fakeJitPackSerializedResponse = """
     {
         "com.github.contentful:rich-text-renderer-java": [],
@@ -139,6 +173,61 @@ internal val fakeJitPackSerializedResponse = """
         "com.github.blackboxvision:datetimepicker-edittext": [],
         "com.github.yalantis:context-menu.android": []
     }
+""".trimIndent()
+
+internal val invalidJitPackSerializedResponse = """
+    {
+        "com.github.contentful:rich-text-renderer-java": [],
+        "com.github.texttechnologylab:textimager-uima": [],
+        "com.github.santalu:mask-edittext": [],
+        "com.github.poovamraj:pinedittextfield": [],
+        "com.github.ramseth001:textdrawable": [],
+        "com.github.cielsk:clearable-edittext": [],
+        "com.github.blackcat27:currencyedittext": [],
+        "com.github.lygttpod:supertextview": [],
+        "com.github.viksaaskool:autofitedittext": [],
+        "com.github.scottyab:showhidepasswordedittext": [],
+        "com.github.hitgif:textfieldboxes": [],
+        "com.github.androiddeveloperlb:autofittextview": [],
+        "com.github.yvescheung:rollingtext": [],
+        "com.github.iambedant:outlinetextview": [],
+        "com.github.carterhudson:html-textview": [],
+        "com.github.mzcretin:expandabletextview": [],
+        "com.github.chenbingx:supertextview": [],
+        "com.github.mahimrocky:showmoretext": [],
+        "com.andreabaccega:android-form-edittext": [],
+        "com.github.mabbas007:tagsedittext": [],
+        "com.github.xiaweizi:marqueetextview": [],
+        "com.github.swapnil1104:otpedittext": [],
+        "com.github.deano2390:flowtextview": [],
+        "com.github.amulyakhare:textdrawable": [],
+        "com.github.wednesday-solutions:creditcardedittext": [],
+        "com.github.egslava:edittext-mask": [],
+        "com.github.victorminerva:autoresizeedittext": [],
+        "com.github.wordpress-mobile:react-native-safe-area-context": [],
+        "com.github.dimorinny:floating-text-button": [],
+        "com.github.tobiasschuerg:android-prefix-suffix-edit-text": [],
+        "com.github.kyash:validatable-textinput-layout": [],
+        "com.github.ammargitham:autolinktextviewv2": [],
+        "com.github.btranslations:text-processing-utils": [],
+        "io.github.hakky54:sslcontext-kickstart": [],
+        "com.github.johnkil:android-robototextview": [],
+        "com.github.wizenoze:justext-java": [],
+        "com.github.mukeshsolanki:google-places-autocomplete-edittext": [],
+        "com.github.vilyever:androidcontextholder": [],
+        "me.austinhuang:autolinktextviewv2": [],
+        "com.github.apg-mobile:android-round-textview": [],
+        "com.github.gcx-hci:grandcentrix-formatted-text-android": [],
+        "com.github.paradoxie:autoverticaltextview": [],
+        "com.github.limedroid:xrichtext": [],
+        "com.github.jmperezra:highlighttextview": [],
+        "com.github.ilgun:expandingtextarea": [],
+        "com.github.sendtion:xrichtext": [],
+        "com.github.tylersuehr7:social-text-view": [],
+        "com.github.elevenetc:textsurface": [],
+        "com.github.blackboxvision:datetimepicker-edittext": [],
+        "com.github.yalantis:context-menu.android": []
+    
 """.trimIndent()
 
 internal val fakeJitPackDeserializedResponse = JitPackResponse(

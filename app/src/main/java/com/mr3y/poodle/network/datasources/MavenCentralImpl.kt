@@ -9,6 +9,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -22,18 +23,16 @@ class MavenCentralImpl @Inject constructor(
         val requestQueryParams = MavenCentralQueryParameters.apply(queryParameters)
         return flow {
             emit(Result.Loading)
-            try {
-                val response: MavenCentralResponse = client.get(baseUrl) {
-                    val query = MavenCentralQueryParameters.getNormalizedStringQueryParameter()
-                    parameter("q", query)
-                    parameter("rows", requestQueryParams.limit.takeIf { it > 0 && it != Int.MAX_VALUE })
-                    parameter("wt", "json")
-                }.body()
-                emit(Result.Success(response))
-            } catch (throwable: Throwable) {
-                // TODO: log that exception with Crash Reporting tool
-                emit(Result.Error(throwable))
-            }
+            val response: MavenCentralResponse = client.get(baseUrl) {
+                val query = MavenCentralQueryParameters.getNormalizedStringQueryParameter()
+                parameter("q", query)
+                parameter("rows", requestQueryParams.limit.takeIf { it > 0 && it != Int.MAX_VALUE })
+                parameter("wt", "json")
+            }.body()
+            emit(Result.Success(response))
+        }.catch { throwable ->
+            // TODO: log that exception with Crash Reporting tool
+            emit(Result.Error(throwable))
         }
     }
 }

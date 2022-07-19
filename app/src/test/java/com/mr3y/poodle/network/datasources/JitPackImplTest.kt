@@ -1,12 +1,14 @@
 package com.mr3y.poodle.network.datasources
 
 import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import com.mr3y.poodle.network.JitPackQueryParameters
 import com.mr3y.poodle.network.fakeClient
 import com.mr3y.poodle.network.fakeJitPackDeserializedResponse
 import com.mr3y.poodle.network.fakeJitPackSerializedResponse
 import com.mr3y.poodle.network.filteredFakeJitPackDeSerializedResponse
 import com.mr3y.poodle.network.filteredFakeJitPackSerializedResponse
+import com.mr3y.poodle.network.invalidJitPackSerializedResponse
 import com.mr3y.poodle.network.jitpackTestUrl
 import com.mr3y.poodle.network.models.Result
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,6 +50,18 @@ class JitPackImplTest {
         }.test {
             assertEquals(Result.Loading, awaitItem())
             assertEquals(Result.Success(filteredFakeJitPackDeSerializedResponse), awaitItem())
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun `given an invalid serialized response, then verifies it catches & emits the error downstream`() = runTest {
+        createJitPackImplInstance(invalidJitPackSerializedResponse).getArtifacts {
+            groupId = "com.github.zhuinden"
+            text = "Simple-stack"
+        }.test {
+            assertEquals(Result.Loading, awaitItem())
+            assertThat(awaitItem()).isInstanceOf(Result.Error::class.java)
             awaitComplete()
         }
     }

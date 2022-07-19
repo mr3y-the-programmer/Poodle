@@ -1,10 +1,12 @@
 package com.mr3y.poodle.network.datasources
 
 import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import com.mr3y.poodle.network.MavenCentralQueryParameters
 import com.mr3y.poodle.network.fakeClient
 import com.mr3y.poodle.network.fakeMavenCentralDeserializedResponse
 import com.mr3y.poodle.network.fakeMavenCentralSerializedResponse
+import com.mr3y.poodle.network.invalidMavenCentralSerializedResponse
 import com.mr3y.poodle.network.mavenCentralTestUrl
 import com.mr3y.poodle.network.models.Result
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,6 +54,16 @@ class MavenCentralImplTest {
         MavenCentralImpl(client, mavenCentralTestUrl).getArtifacts {}.test {
             assertEquals(Result.Loading, awaitItem())
             assertEquals(Result.Success(fakeMavenCentralDeserializedResponse), awaitItem())
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun `given an invalid serialized response, then verifies it catches & emits the error downstream`() = runTest {
+        val client = fakeClient(invalidMavenCentralSerializedResponse)
+        MavenCentralImpl(client, mavenCentralTestUrl).getArtifacts {}.test {
+            assertEquals(Result.Loading, awaitItem())
+            assertThat(awaitItem()).isInstanceOf(Result.Error::class.java)
             awaitComplete()
         }
     }
