@@ -1,5 +1,6 @@
 package com.mr3y.poodle.network.datasources
 
+import app.cash.turbine.test
 import com.mr3y.poodle.network.MavenCentralQueryParameters
 import com.mr3y.poodle.network.fakeClient
 import com.mr3y.poodle.network.fakeMavenCentralDeserializedResponse
@@ -48,8 +49,11 @@ class MavenCentralImplTest {
     @Test
     fun `given a normal serialized response, then verifies it deserializes the response correctly`() = runTest {
         val client = fakeClient(fakeMavenCentralSerializedResponse)
-        val actualResponse = MavenCentralImpl(client, mavenCentralTestUrl).getArtifacts {}
-        assertEquals(Result.Success(fakeMavenCentralDeserializedResponse), actualResponse)
+        MavenCentralImpl(client, mavenCentralTestUrl).getArtifacts {}.test {
+            assertEquals(Result.Loading, awaitItem())
+            assertEquals(Result.Success(fakeMavenCentralDeserializedResponse), awaitItem())
+            awaitComplete()
+        }
     }
 
     @After

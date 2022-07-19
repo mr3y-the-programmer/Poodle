@@ -8,6 +8,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class MavenCentralImpl @Inject constructor(
@@ -16,19 +18,22 @@ class MavenCentralImpl @Inject constructor(
     private val baseUrl: String
 ) : MavenCentral {
 
-    override suspend fun getArtifacts(queryParameters: MavenCentralQueryParameters.() -> Unit): Result<MavenCentralResponse> {
+    override fun getArtifacts(queryParameters: MavenCentralQueryParameters.() -> Unit): Flow<Result<MavenCentralResponse>> {
         val requestQueryParams = MavenCentralQueryParameters.apply(queryParameters)
-        return try {
-            val response: MavenCentralResponse = client.get(baseUrl) {
-                val query = MavenCentralQueryParameters.getNormalizedStringQueryParameter()
-                parameter("q", query)
-                parameter("rows", requestQueryParams.limit.takeIf { it > 0 && it != Int.MAX_VALUE })
-                parameter("wt", "json")
-            }.body()
-            Result.Success(response)
-        } catch (throwable: Throwable) {
-            // TODO: log that exception with Crash Reporting tool
-            Result.Error(throwable)
+        return flow {
+            emit(Result.Loading)
+            try {
+                val response: MavenCentralResponse = client.get(baseUrl) {
+                    val query = MavenCentralQueryParameters.getNormalizedStringQueryParameter()
+                    parameter("q", query)
+                    parameter("rows", requestQueryParams.limit.takeIf { it > 0 && it != Int.MAX_VALUE })
+                    parameter("wt", "json")
+                }.body()
+                emit(Result.Success(response))
+            } catch (throwable: Throwable) {
+                // TODO: log that exception with Crash Reporting tool
+                emit(Result.Error(throwable))
+            }
         }
     }
 }

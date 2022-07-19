@@ -9,6 +9,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.path
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.JsonObject
 import javax.inject.Inject
 
@@ -18,33 +20,36 @@ class JitPackImpl @Inject constructor(
     private val baseUrl: String
 ) : JitPack {
 
-    override suspend fun getArtifacts(queryParameters: JitPackQueryParameters.() -> Unit): Result<JitPackResponse> {
+    override fun getArtifacts(queryParameters: JitPackQueryParameters.() -> Unit): Flow<Result<JitPackResponse>> {
         val requestQueryParameters = JitPackQueryParameters.apply(queryParameters)
-        return try {
-            var isGroupIdEmpty = true
-            // we have to return a jsonObject & transform it manually as JitPack API is poorly designed
-            val response: JsonObject = client.get(baseUrl) {
-                url {
-                    path("search")
-                    requestQueryParameters.groupId.takeIf { it.isNotEmpty() }?.let {
-                        isGroupIdEmpty = false
-                        parameters.append("q", "$it:")
+        return flow {
+            emit(Result.Loading)
+            try {
+                var isGroupIdEmpty = true
+                // we have to return a jsonObject & transform it manually as JitPack API is poorly designed
+                val response: JsonObject = client.get(baseUrl) {
+                    url {
+                        path("search")
+                        requestQueryParameters.groupId.takeIf { it.isNotEmpty() }?.let {
+                            isGroupIdEmpty = false
+                            parameters.append("q", "$it:")
+                        }
+                        requestQueryParameters.text.takeIf { it.isNotEmpty() && isGroupIdEmpty }?.let {
+                            parameters.append("q", it)
+                        }
+                        requestQueryParameters.limit.takeIf { it > 0 && it != Int.MAX_VALUE }?.let {
+                            parameters.append("limit", it.toString())
+                        }
                     }
-                    requestQueryParameters.text.takeIf { it.isNotEmpty() && isGroupIdEmpty }?.let {
-                        parameters.append("q", it)
-                    }
-                    requestQueryParameters.limit.takeIf { it > 0 && it != Int.MAX_VALUE }?.let {
-                        parameters.append("limit", it.toString())
-                    }
-                }
-            }.body()
-            val jitPackResponse = response
-                .toJitPackResponse()
-                // because JitPack API doesn't allow text & groupId in one query
-                .filterRelevantResponses(!isGroupIdEmpty && requestQueryParameters.text.isNotEmpty(), requestQueryParameters.text)
-            Result.Success(jitPackResponse)
-        } catch (throwable: Throwable) {
-            Result.Error(throwable)
+                }.body()
+                val jitPackResponse = response
+                    .toJitPackResponse()
+                    // because JitPack API doesn't allow text & groupId in one query
+                    .filterRelevantResponses(!isGroupIdEmpty && requestQueryParameters.text.isNotEmpty(), requestQueryParameters.text)
+                emit(Result.Success(jitPackResponse))
+            } catch (throwable: Throwable) {
+                emit(Result.Error(throwable))
+            }
         }
     }
 
