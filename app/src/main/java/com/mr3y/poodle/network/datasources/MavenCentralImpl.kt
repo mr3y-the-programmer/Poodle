@@ -2,6 +2,7 @@ package com.mr3y.poodle.network.datasources
 
 import com.mr3y.poodle.di.MavenCentralBaseUrl
 import com.mr3y.poodle.network.MavenCentralQueryParameters
+import com.mr3y.poodle.network.exceptions.toPoodleException
 import com.mr3y.poodle.network.models.MavenCentralResponse
 import com.mr3y.poodle.network.models.Result
 import io.ktor.client.HttpClient
@@ -32,7 +33,7 @@ class MavenCentralImpl @Inject constructor(
             emit(Result.Success(response))
         }.catch { throwable ->
             // TODO: log that exception with Crash Reporting tool
-            emit(Result.Error(throwable))
+            emit(Result.Error(throwable.toPoodleException(isMavenCentralServer = true)))
         }
     }
 }

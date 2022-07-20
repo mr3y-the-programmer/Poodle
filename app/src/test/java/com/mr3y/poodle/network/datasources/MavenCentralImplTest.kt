@@ -3,6 +3,7 @@ package com.mr3y.poodle.network.datasources
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.mr3y.poodle.network.MavenCentralQueryParameters
+import com.mr3y.poodle.network.exceptions.DecodingException
 import com.mr3y.poodle.network.fakeClient
 import com.mr3y.poodle.network.fakeMavenCentralDeserializedResponse
 import com.mr3y.poodle.network.fakeMavenCentralSerializedResponse
@@ -62,7 +63,10 @@ class MavenCentralImplTest {
         val client = fakeClient(invalidMavenCentralSerializedResponse)
         MavenCentralImpl(client, mavenCentralTestUrl).getArtifacts {}.test {
             assertThat(awaitItem()).isEqualTo(Result.Loading)
-            assertThat(awaitItem()).isInstanceOf(Result.Error::class.java)
+            val nextItem = awaitItem()
+            assertThat(nextItem).isInstanceOf(Result.Error::class.java)
+            nextItem as Result.Error
+            assertThat(nextItem.exception).isInstanceOf(DecodingException::class.java)
             awaitComplete()
         }
     }

@@ -2,6 +2,7 @@ package com.mr3y.poodle.network.datasources
 
 import com.mr3y.poodle.di.JitPackBaseUrl
 import com.mr3y.poodle.network.JitPackQueryParameters
+import com.mr3y.poodle.network.exceptions.toPoodleException
 import com.mr3y.poodle.network.models.JitPackArtifact
 import com.mr3y.poodle.network.models.JitPackResponse
 import com.mr3y.poodle.network.models.Result
@@ -51,7 +52,7 @@ class JitPackImpl @Inject constructor(
                 )
             emit(Result.Success(jitPackResponse))
         }.catch { throwable ->
-            emit(Result.Error(throwable))
+            emit(Result.Error(throwable.toPoodleException(isMavenCentralServer = false)))
         }
     }
 
