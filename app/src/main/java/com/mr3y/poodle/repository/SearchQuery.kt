@@ -8,4 +8,8 @@ data class SearchQuery(
     val tags: Set<String>,
     val containsClassSimpleName: String,
     val containsClassFullyQualifiedName: String
-)
+) {
+    companion object {
+        val EMPTY = SearchQuery("", "", Int.MAX_VALUE, "", emptySet(), "", "")
+    }
+}
