@@ -23,7 +23,7 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
         searchQuery: SearchQuery,
         searchOnMaven: Boolean,
         searchOnJitPack: Boolean,
-    ): Flow<Result<List<Artifact>>> {
+    ): Flow<SearchResult> {
         val mavenCentralArtifacts by lazy {
             mavenCentralDataSource.getArtifacts {
                 text = searchQuery.text
@@ -34,11 +34,12 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
                 containsClassSimpleName = searchQuery.containsClassSimpleName
                 containsClassFullyQualifiedName = searchQuery.containsClassFullyQualifiedName
             }.map {
-                when (it) {
+                val data = when (it) {
                     is Result.Success -> { Result.Success(it.data.toArtifacts()) }
                     is Result.Error -> { it }
                     is Result.Loading -> { it }
                 }
+                SearchResult(data, Source.MavenCentral)
             }
         }
         val jitPackArtifacts by lazy {
@@ -47,11 +48,12 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
                 groupId = searchQuery.groupId
                 limit = searchQuery.limit
             }.map {
-                when (it) {
+                val data = when (it) {
                     is Result.Success -> { Result.Success(it.data.toArtifacts()) }
                     is Result.Error -> { it }
                     is Result.Loading -> { it }
                 }
+                SearchResult(data, Source.JitPack)
             }
         }
 
@@ -64,12 +66,15 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
     }
 
     private fun MavenCentralResponse.toArtifacts(): List<Artifact.MavenCentralArtifact> {
-        return artifacts.map {
+        return response.docs.map {
             Artifact.MavenCentralArtifact(
                 it.id,
                 it.latestVersion,
                 it.packaging,
-                ZonedDateTime.ofInstant(Instant.ofEpochMilli(it.timestamp), ZoneId.systemDefault())
+                ZonedDateTime.ofInstant(
+                    Instant.ofEpochMilli(it.timestamp),
+                    ZoneId.systemDefault()
+                )
             )
         }
     }

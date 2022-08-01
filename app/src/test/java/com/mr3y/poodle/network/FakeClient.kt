@@ -16,7 +16,7 @@ import kotlinx.serialization.json.Json
 
 internal val mavenCentralTestUrl = "https://search.maven.org/solrsearch/select"
 
-internal val jitpackTestUrl = "https://jitpack.io/api"
+internal val jitpackTestUrl = "https://jitpack.io/api/search"
 
 private val mockEngine: (response: String) -> MockEngine = {
     MockEngine { request ->

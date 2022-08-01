@@ -1,5 +1,6 @@
 package com.mr3y.poodle.repository
 
+import app.cash.turbine.FlowTurbine
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -24,15 +25,26 @@ class SearchForArtifactsRepositoryImplTest {
     fun `given a fake search query & a combination of parameters, then it should return matched artifacts from enabled data sources`() = runTest {
         sut.searchByQuery(fakeSearchQuery, isSearchOnMavenEnabled, isSearchOnJitPackEnabled).test {
             if (isSearchOnMavenEnabled) {
-                assertThat(awaitItem()).isEqualTo(Result.Loading)
-                assertThat(awaitItem()).isEqualTo(Result.Success(fakeArtifactsPart1))
+                awaitArtifactsFromSource(Source.MavenCentral) { artifacts ->
+                    assertThat(artifacts).isEqualTo(Result.Success(fakeArtifactsPart1))
+                }
             }
             if (isSearchOnJitPackEnabled) {
-                assertThat(awaitItem()).isEqualTo(Result.Loading)
-                assertThat(awaitItem()).isEqualTo(Result.Success(fakeArtifactsPart2))
+                awaitArtifactsFromSource(Source.JitPack) { artifacts ->
+                    assertThat(artifacts).isEqualTo(Result.Success(fakeArtifactsPart2))
+                }
             }
             awaitComplete()
         }
+    }
+
+    private suspend inline fun FlowTurbine<SearchResult>.awaitArtifactsFromSource(source: Source, onArtifactsReceived: (Result<List<Artifact>>) -> Unit) {
+        var nextItem = awaitItem()
+        assertThat(nextItem.first).isEqualTo(Result.Loading)
+        assertThat(nextItem.second).isEqualTo(source)
+        nextItem = awaitItem()
+        onArtifactsReceived(nextItem.first)
+        assertThat(nextItem.second).isEqualTo(source)
     }
 
     companion object {
