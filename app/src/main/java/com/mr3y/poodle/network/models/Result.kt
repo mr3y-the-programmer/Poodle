@@ -17,3 +17,6 @@ fun <R> Result<R>.successOr(fallback: R): R {
 
 val <R> Result<R>.data: R?
     get() = (this as? Result.Success)?.data
+
+val <R> Result<R>.exception: PoodleException?
+    get() = (this as? Result.Error)?.exception

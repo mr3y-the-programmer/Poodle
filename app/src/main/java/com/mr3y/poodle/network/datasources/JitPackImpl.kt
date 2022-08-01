@@ -9,7 +9,6 @@ import com.mr3y.poodle.network.models.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.http.path
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -30,7 +29,6 @@ class JitPackImpl @Inject constructor(
             // we have to return a jsonObject & transform it manually as JitPack API is poorly designed
             val response: JsonObject = client.get(baseUrl) {
                 url {
-                    path("search")
                     requestQueryParameters.groupId.takeIf { it.isNotEmpty() }?.let {
                         isGroupIdEmpty = false
                         parameters.append("q", "$it:")
