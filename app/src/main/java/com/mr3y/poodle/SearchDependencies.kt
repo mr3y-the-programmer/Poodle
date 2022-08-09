@@ -1,21 +1,34 @@
 package com.mr3y.poodle
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Chip
+import androidx.compose.material.ChipDefaults
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
@@ -28,44 +41,235 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mr3y.poodle.network.exceptions.PoodleException
+import com.mr3y.poodle.presentation.SearchScreenState
+import com.mr3y.poodle.presentation.SearchScreenViewModel
+import com.mr3y.poodle.repository.Artifact
+import com.mr3y.poodle.repository.SearchQuery
+
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
+@Composable
+fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
+    val homeState by viewModel.homeState.collectAsStateWithLifecycle(initialValue = SearchScreenState.Initial)
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.HalfExpanded)
+    val query by remember { viewModel.searchQuery }
+    val filters by remember {
+        derivedStateOf {
+            PoodleFiltersState(
+                viewModel.isSearchOnMavenEnabled.value,
+                viewModel::toggleSearchOnMaven,
+                viewModel.isSearchOnJitPackEnabled.value,
+                viewModel::toggleSearchOnJitPack,
+                query.groupId,
+                { viewModel.updateSearchQuery(groupId = it) },
+                query.packaging,
+                { viewModel.updateSearchQuery(packaging = it) },
+                query.tags,
+                { viewModel.updateSearchQuery(tags = it) },
+                query.limit,
+                { viewModel.updateSearchQuery(limit = it) },
+                query.containsClassSimpleName,
+                { viewModel.updateSearchQuery(containsClassSimpleName = it) },
+                query.containsClassFullyQualifiedName,
+                { viewModel.updateSearchQuery(containsClassFQN = it) }
+            )
+        }
+    }
+    SearchDependencies(homeState, bottomSheetState, query, { viewModel.updateSearchQuery(searchText = it) }, filters)
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SearchDependencies() {
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.HalfExpanded)
-    var filters by remember { mutableStateOf(PoodleFiltersState.Default) }
-    var query by remember { mutableStateOf("") }
+internal fun SearchDependencies(
+    state: SearchScreenState,
+    bottomSheetState: ModalBottomSheetState,
+    searchQuery: SearchQuery,
+    onSearchQueryTextChanged: (String) -> Unit,
+    filtersState: PoodleFiltersState
+) {
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         modifier = Modifier.fillMaxSize(),
         sheetContent = {
-            PoodleBottomSheet(filters)
+            PoodleBottomSheet(filtersState)
         },
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
     ) {
+        val scaffoldState = rememberScaffoldState()
         Scaffold(
+            scaffoldState = scaffoldState,
             topBar = {
-                PoodleTopAppBar(query, { query = it })
+                PoodleTopAppBar(
+                    searchQuery.text,
+                    onSearchQueryTextChanged,
+                )
             }
         ) { contentPadding ->
-            LazyColumn(modifier = Modifier.padding(contentPadding)) {
-                // TODO: handle different states(Initial, Content, EmptyResults, AutoComplete) by showing different artworks
+            val contentModifier = Modifier
+                .padding(contentPadding)
+                .fillMaxSize()
+            when {
+                state.isIdle -> {
+                    Initial(modifier = contentModifier)
+                }
+                state.isLoading -> {
+                    Box(
+                        modifier = contentModifier,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                }
+                state.shouldShowArtifacts -> {
+                    if (state.artifacts.isEmpty()) {
+                        Empty(
+                            searchQueryText = searchQuery.text,
+                            modifier = contentModifier
+                        )
+                    } else {
+                        DisplaySearchResults(artifacts = state.artifacts, modifier = contentModifier)
+                    }
+                }
+                state.shouldShowExceptions -> {
+                    Error(exceptions = state.exceptions, contentModifier)
+                }
+                state.shouldShowArtifactsAndExceptions -> {
+                    if (state.artifacts.isEmpty()) {
+                        Empty(searchQueryText = searchQuery.text, modifier = contentModifier)
+                    } else {
+                        DisplaySearchResults(artifacts = state.artifacts, contentModifier)
+                    }
+                    LaunchedEffect(key1 = Unit) {
+                        state.exceptions.forEach { exception ->
+                            scaffoldState.snackbarHostState.showSnackbar("Error: ${exception.message}")
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun Initial(modifier: Modifier = Modifier) {
+    ArtworkWithText(
+        drawableResId = if (isSystemInDarkTheme()) R.drawable.initial_vector_dark else R.drawable.initial_vector_light,
+        text = "Search for any artifacts On MavenCentral, Or JitPack",
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun Empty(searchQueryText: String, modifier: Modifier = Modifier) {
+    ArtworkWithText(
+        drawableResId = if (isSystemInDarkTheme()) R.drawable.no_results_dark else R.drawable.no_results_light,
+        text = "Can't find anything that matches \"${searchQueryText}\". refine your search, and try again",
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier = Modifier) {
+    LazyColumn(
+        modifier = modifier
+    ) {
+        items(artifacts) { artifact ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(text = artifact.fullId)
+                if (artifact is Artifact.MavenCentralArtifact) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        TextChip(text = artifact.latestVersion, Modifier.wrapContentWidth())
+                        TextChip(text = artifact.packaging, Modifier.wrapContentWidth())
+                        TextChip(text = "${artifact.lastUpdated.toLocalDate()}", Modifier.wrapContentWidth())
+                    }
+                }
+                val source = if (artifact is Artifact.MavenCentralArtifact) "MavenCentral" else "JitPack"
+                TextChip(text = "hosted on: $source", Modifier.align(Alignment.End))
+                Divider()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun TextChip(text: String, modifier: Modifier = Modifier) {
+    Chip(
+        onClick = { },
+        colors = ChipDefaults.chipColors(
+            backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.12f)
+                .compositeOver(MaterialTheme.colors.surface),
+            contentColor = MaterialTheme.colors.primary
+        ),
+        modifier = modifier
+    ) {
+        Text(text = text)
+    }
+}
+
+@Composable
+private fun Error(exceptions: List<PoodleException>, modifier: Modifier = Modifier) {
+    val message = buildString {
+        append("Unfortunately, an error occurred while trying to search for artifacts.")
+        append("\nCouldn't search for artifacts due to: ")
+        exceptions.forEach { exception ->
+            append("\n- ${exception.message}")
+        }
+    }
+    ArtworkWithText(
+        drawableResId = if (isSystemInDarkTheme()) R.drawable.error_dark else R.drawable.error_light,
+        text = message,
+        modifier
+    )
+}
+
+@Composable
+private fun ArtworkWithText(
+    drawableResId: Int,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(140.dp))
+        Image(
+            painter = painterResource(id = drawableResId),
+            contentDescription = null,
+            modifier = Modifier.size(240.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = text)
     }
 }
 
@@ -114,7 +318,7 @@ fun PoodleTopAppBar(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent
+                errorIndicatorColor = Color.Transparent,
             ),
             shape = RoundedCornerShape(40.dp),
             singleLine = true,
@@ -141,7 +345,7 @@ fun PoodleTopAppBar(
     }
 }
 
-private data class PoodleFiltersState(
+internal data class PoodleFiltersState(
     val isMavenCentralEnabled: Boolean,
     val onMavenCentralSwitchToggled: (Boolean) -> Unit,
     val isJitpackEnabled: Boolean,
@@ -150,8 +354,8 @@ private data class PoodleFiltersState(
     val onGroupIdValueChanged: (String) -> Unit,
     val packagingInitialValue: String,
     val onPackagingValueChanged: (String) -> Unit,
-    val tagsInitialValue: String,
-    val onTagsValueChanged: (String) -> Unit,
+    val tagsInitialValue: Set<String>,
+    val onTagsValueChanged: (Set<String>) -> Unit,
     val limitInitialValue: Int?,
     val onLimitValueChanged: (Int?) -> Unit,
     val classSimpleNameInitialValue: String,
@@ -169,7 +373,7 @@ private data class PoodleFiltersState(
             {},
             "",
             {},
-            "",
+            emptySet(),
             {},
             null,
             {},
@@ -237,8 +441,8 @@ private fun PoodleBottomSheet(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             FilterTextField(
-                initialValue = state.tagsInitialValue,
-                onValueChange = state.onTagsValueChanged,
+                initialValue = state.tagsInitialValue.joinToString(),
+                onValueChange = { state.onTagsValueChanged },
                 label = "Tags: *",
                 modifier = Modifier.weight(1f)
             )
@@ -352,6 +556,14 @@ fun FilterTextField(
 
 @Preview
 @Composable
+@OptIn(ExperimentalMaterialApi::class)
 fun SearchDependenciesPreview() {
-    SearchDependencies()
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.HalfExpanded)
+    SearchDependencies(
+        SearchScreenState.Initial,
+        bottomSheetState,
+        SearchQuery.EMPTY,
+        {},
+        PoodleFiltersState.Default
+    )
 }
