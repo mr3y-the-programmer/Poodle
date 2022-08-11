@@ -15,7 +15,7 @@ object MavenCentralQueryParameters : EndPointQueryParameters {
 
     override var groupId = ""
 
-    override var limit = 50
+    override var limit = 200
 
     override var text = ""
 
@@ -30,7 +30,7 @@ object MavenCentralQueryParameters : EndPointQueryParameters {
     override fun clearQueryParameters() {
         text = ""
         groupId = ""
-        limit = 50
+        limit = 200
         packaging = ""
         tags = emptySet()
         containsClassSimpleName = ""

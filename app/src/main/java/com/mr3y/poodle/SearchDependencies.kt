@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,7 @@ import androidx.compose.material.ChipDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -37,6 +39,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sort
@@ -61,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mr3y.poodle.network.datasources.FilteringPackaging
 import com.mr3y.poodle.network.exceptions.PoodleException
 import com.mr3y.poodle.presentation.SearchScreenState
 import com.mr3y.poodle.presentation.SearchScreenViewModel
@@ -350,17 +354,17 @@ internal data class PoodleFiltersState(
     val onMavenCentralSwitchToggled: (Boolean) -> Unit,
     val isJitpackEnabled: Boolean,
     val onJitpackSwitchToggled: (Boolean) -> Unit,
-    val groupIdInitialValue: String,
+    val groupIdValue: String,
     val onGroupIdValueChanged: (String) -> Unit,
-    val packagingInitialValue: String,
+    val packagingValue: String,
     val onPackagingValueChanged: (String) -> Unit,
-    val tagsInitialValue: Set<String>,
+    val tagsValue: Set<String>,
     val onTagsValueChanged: (Set<String>) -> Unit,
-    val limitInitialValue: Int?,
+    val limitValue: Int?,
     val onLimitValueChanged: (Int?) -> Unit,
-    val classSimpleNameInitialValue: String,
+    val classSimpleNameValue: String,
     val onClassSimpleNameValueChanged: (String) -> Unit,
-    val classFQNInitialValue: String,
+    val classFQNValue: String,
     val onClassFQNValueChanged: (String) -> Unit,
 ) {
     companion object {
@@ -385,6 +389,7 @@ internal data class PoodleFiltersState(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun PoodleBottomSheet(
     state: PoodleFiltersState,
@@ -423,36 +428,49 @@ private fun PoodleBottomSheet(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             FilterTextField(
-                initialValue = state.groupIdInitialValue,
+                initialValue = state.groupIdValue,
                 onValueChange = state.onGroupIdValueChanged,
                 label = "GroupId:",
                 modifier = Modifier.weight(1f)
             )
             FilterTextField(
-                initialValue = state.packagingInitialValue,
-                onValueChange = state.onPackagingValueChanged,
-                label = "Packaging: *",
-                modifier = Modifier.weight(1f)
+                initialValue = state.limitValue?.toString() ?: "",
+                onValueChange = { state.onLimitValueChanged(it.toIntOrNull()) },
+                label = "Limit:",
+                modifier = Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
         }
         Row(
             modifier = childModifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            FilterTextField(
-                initialValue = state.tagsInitialValue.joinToString(),
-                onValueChange = { state.onTagsValueChanged },
-                label = "Tags: *",
-                modifier = Modifier.weight(1f)
-            )
-            FilterTextField(
-                initialValue = state.limitInitialValue?.toString() ?: "",
-                onValueChange = { state.onLimitValueChanged(it.toInt()) },
-                label = "Limit:",
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
+            Text(text = "Packaging *: ")
+            val packages = remember { FilteringPackaging }
+            repeat(3) { index ->
+                FilterChip(
+                    selected = state.packagingValue == packages.elementAt(index),
+                    onClick = {
+                        val newValue = if (state.packagingValue == packages.elementAt(index)) {
+                            ""
+                        } else {
+                            packages.elementAt(index)
+                        }
+                        state.onPackagingValueChanged(newValue)
+                    },
+                    border = ChipDefaults.outlinedBorder,
+                    colors = ChipDefaults.outlinedFilterChipColors(),
+                    selectedIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = null,
+                            modifier = Modifier.requiredSize(ChipDefaults.SelectedIconSize)
+                        )
+                    }
+                ) {
+                    Text(text = packages.elementAt(index))
+                }
+            }
         }
         Column(
             modifier = childModifier,
@@ -461,13 +479,13 @@ private fun PoodleBottomSheet(
         ) {
             Text(text = "Advanced *")
             FilterTextField(
-                initialValue = state.classSimpleNameInitialValue,
+                initialValue = state.classSimpleNameValue,
                 onValueChange = state.onClassSimpleNameValueChanged,
                 label = "Contains class simple name:",
                 modifier = Modifier.fillMaxWidth()
             )
             FilterTextField(
-                initialValue = state.classFQNInitialValue,
+                initialValue = state.classFQNValue,
                 onValueChange = state.onClassFQNValueChanged,
                 label = "Contains class FQN:",
                 modifier = Modifier.fillMaxWidth()

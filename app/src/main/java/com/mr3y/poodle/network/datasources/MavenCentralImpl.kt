@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
+val FilteringPackaging = setOf("pom", "jar", "aar")
+
 class MavenCentralImpl @Inject constructor(
     private val client: HttpClient,
     @MavenCentralBaseUrl
@@ -48,8 +50,7 @@ internal fun MavenCentralQueryParameters.getNormalizedStringQueryParameter(): St
         result.append("g:$it")
         result.append(" AND ")
     }
-    // TODO: validate if package is jar,aar..etc
-    packaging.takeIf { it.isNotEmpty() }?.let {
+    packaging.takeIf { it.isNotEmpty() && it in FilteringPackaging }?.let {
         result.append("p:$it")
         result.append(" AND ")
     }

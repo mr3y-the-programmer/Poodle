@@ -43,6 +43,17 @@ class MavenCentralImplTest {
     }
 
     @Test
+    fun `given unsupported filtering packaging in DSL, then verifies the query is normalized & the packaging is omitted`() {
+        val actualQuery = MavenCentralQueryParameters.apply {
+            groupId = "com.google.inject"
+            packaging = "klib"
+            tags = setOf("dependency", "guice", "injection", "java")
+        }.getNormalizedStringQueryParameter()
+        val expectedQuery = "g:com.google.inject AND tags:dependency AND tags:guice AND tags:injection AND tags:java"
+        assertThat(actualQuery).isEqualTo(expectedQuery)
+    }
+
+    @Test
     fun `given no query parameters, then verifies that it returns null`() {
         val actualQuery = MavenCentralQueryParameters.getNormalizedStringQueryParameter()
         assertThat(actualQuery).isEqualTo(null)
