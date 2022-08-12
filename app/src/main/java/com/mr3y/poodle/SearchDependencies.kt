@@ -29,9 +29,6 @@ import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
@@ -43,12 +40,12 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,12 +67,17 @@ import com.mr3y.poodle.presentation.SearchScreenState
 import com.mr3y.poodle.presentation.SearchScreenViewModel
 import com.mr3y.poodle.repository.Artifact
 import com.mr3y.poodle.repository.SearchQuery
+import com.mr3y.poodle.ui.component.PoodleModalBottomSheetLayout
+import com.mr3y.poodle.ui.component.PoodleModalBottomSheetState
+import com.mr3y.poodle.ui.component.PoodleModalBottomSheetValue
+import com.mr3y.poodle.ui.component.rememberPoodleModalBottomSheetState
+import com.mr3y.poodle.ui.theme.PoodleTheme
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
 fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
     val homeState by viewModel.homeState.collectAsStateWithLifecycle(initialValue = SearchScreenState.Initial)
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.HalfExpanded)
+    val bottomSheetState = rememberPoodleModalBottomSheetState(initialValue = PoodleModalBottomSheetValue.Collapsed)
     val query by remember { viewModel.searchQuery }
     val filters by remember {
         derivedStateOf {
@@ -106,18 +108,19 @@ fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
 @Composable
 internal fun SearchDependencies(
     state: SearchScreenState,
-    bottomSheetState: ModalBottomSheetState,
+    bottomSheetState: PoodleModalBottomSheetState,
     searchQuery: SearchQuery,
     onSearchQueryTextChanged: (String) -> Unit,
     filtersState: PoodleFiltersState
 ) {
-    ModalBottomSheetLayout(
+    val collapsedSheetOffsetFraction by remember { mutableStateOf(0.95f) }
+    PoodleModalBottomSheetLayout(
         sheetState = bottomSheetState,
         modifier = Modifier.fillMaxSize(),
         sheetContent = {
             PoodleBottomSheet(filtersState)
         },
-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+        sheetCollapsedOffsetFraction = collapsedSheetOffsetFraction
     ) {
         val scaffoldState = rememberScaffoldState()
         Scaffold(
@@ -576,12 +579,14 @@ fun FilterTextField(
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 fun SearchDependenciesPreview() {
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.HalfExpanded)
-    SearchDependencies(
-        SearchScreenState.Initial,
-        bottomSheetState,
-        SearchQuery.EMPTY,
-        {},
-        PoodleFiltersState.Default
-    )
+    PoodleTheme(false) {
+        val bottomSheetState = rememberPoodleModalBottomSheetState(initialValue = PoodleModalBottomSheetValue.Collapsed)
+        SearchDependencies(
+            SearchScreenState.Initial,
+            bottomSheetState,
+            SearchQuery.EMPTY,
+            {},
+            PoodleFiltersState.Default
+        )
+    }
 }
