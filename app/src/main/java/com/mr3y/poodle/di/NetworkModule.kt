@@ -54,5 +54,5 @@ object NetworkModule {
 
     @JitPackBaseUrl
     @Provides
-    fun provideJitPackBaseUrl(): String = "https://jitpack.io/api/search"
+    fun provideJitPackBaseUrl(): String = "https://jitpack.io/api"
 }

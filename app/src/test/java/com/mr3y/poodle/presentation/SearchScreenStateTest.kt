@@ -61,7 +61,7 @@ class SearchScreenStateTest {
         @Test
         fun `given both data sources returned artifacts, then make sure it is success state with no exceptions`() {
             val mavenCentralArtifacts = listOf(Artifact.MavenCentralArtifact("mavenCentral", "1.8", "jar", ZonedDateTime.now()))
-            val jitPackArtifacts = listOf(Artifact.JitPackArtifact("jitpack"))
+            val jitPackArtifacts = listOf(Artifact.JitPackArtifact("jitpack", "2.1", ZonedDateTime.now()))
             val state = SearchScreenState(Result.Success(mavenCentralArtifacts), Result.Success(jitPackArtifacts))
 
             assertThat(state.isIdle).isEqualTo(false)

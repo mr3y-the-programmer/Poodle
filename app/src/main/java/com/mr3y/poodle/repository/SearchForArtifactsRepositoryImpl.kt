@@ -80,6 +80,12 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
     }
 
     private fun JitPackResponse.toArtifacts(): List<Artifact.JitPackArtifact> {
-        return artifacts.map { Artifact.JitPackArtifact(it.id) }
+        return artifacts.map {
+            Artifact.JitPackArtifact(
+                it.groupAndArtifactIdCoordinates,
+                it.version,
+                ZonedDateTime.ofInstant(Instant.ofEpochMilli(it.timestamp), ZoneId.systemDefault())
+            )
+        }
     }
 }

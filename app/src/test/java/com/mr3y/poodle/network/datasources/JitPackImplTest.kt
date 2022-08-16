@@ -6,8 +6,10 @@ import com.mr3y.poodle.network.JitPackQueryParameters
 import com.mr3y.poodle.network.exceptions.DecodingException
 import com.mr3y.poodle.network.fakeClient
 import com.mr3y.poodle.network.fakeJitPackDeserializedResponse
+import com.mr3y.poodle.network.fakeJitPackResponseMetadata
 import com.mr3y.poodle.network.fakeJitPackSerializedResponse
 import com.mr3y.poodle.network.filteredFakeJitPackDeSerializedResponse
+import com.mr3y.poodle.network.filteredFakeJitPackResponseMetadata
 import com.mr3y.poodle.network.filteredFakeJitPackSerializedResponse
 import com.mr3y.poodle.network.invalidJitPackSerializedResponse
 import com.mr3y.poodle.network.jitpackTestUrl
@@ -16,13 +18,19 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
+import java.util.LinkedList
+import java.util.Queue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JitPackImplTest {
 
     @Test
     fun `given a normal serialized response & no query parameters, then verifies it deserializes the response correctly`() = runTest {
-        createJitPackImplInstance(fakeJitPackSerializedResponse).getArtifacts { }.test {
+        val responses = LinkedList<String>().apply {
+            push(fakeJitPackSerializedResponse)
+            addAll(fakeJitPackResponseMetadata)
+        }
+        createJitPackImplInstance(responses).getArtifacts { }.test {
             assertThat(awaitItem()).isEqualTo(Result.Loading)
             assertThat(awaitItem()).isEqualTo(Result.Success(fakeJitPackDeserializedResponse))
             awaitComplete()
@@ -31,7 +39,11 @@ class JitPackImplTest {
 
     @Test
     fun `given a serialized response with all query parameters, then verifies it deserializes & filters the response correctly`() = runTest {
-        createJitPackImplInstance(filteredFakeJitPackSerializedResponse).getArtifacts {
+        val responses = LinkedList<String>().apply {
+            push(filteredFakeJitPackSerializedResponse)
+            addAll(filteredFakeJitPackResponseMetadata)
+        }
+        createJitPackImplInstance(responses).getArtifacts {
             groupId = "com.github.zhuinden"
             text = "Simple-stack"
             limit = 3
@@ -45,7 +57,11 @@ class JitPackImplTest {
 
     @Test
     fun `given a serialized response with some query parameters, then verifies it deserializes & filters the response correctly`() = runTest {
-        createJitPackImplInstance(filteredFakeJitPackSerializedResponse).getArtifacts {
+        val responses = LinkedList<String>().apply {
+            push(filteredFakeJitPackSerializedResponse)
+            addAll(filteredFakeJitPackResponseMetadata)
+        }
+        createJitPackImplInstance(responses).getArtifacts {
             text = "zhuinden"
         }.test {
             assertThat(awaitItem()).isEqualTo(Result.Loading)
@@ -56,7 +72,10 @@ class JitPackImplTest {
 
     @Test
     fun `given an invalid serialized response, then verifies it catches & emits the error downstream`() = runTest {
-        createJitPackImplInstance(invalidJitPackSerializedResponse).getArtifacts {
+        val responses = LinkedList<String>().apply {
+            push(invalidJitPackSerializedResponse)
+        }
+        createJitPackImplInstance(responses).getArtifacts {
             groupId = "com.github.zhuinden"
             text = "Simple-stack"
         }.test {
@@ -74,7 +93,7 @@ class JitPackImplTest {
         JitPackQueryParameters.clearQueryParameters()
     }
 
-    private fun createJitPackImplInstance(response: String): JitPackImpl {
-        return JitPackImpl(fakeClient(response), jitpackTestUrl)
+    private fun createJitPackImplInstance(responses: Queue<String>): JitPackImpl {
+        return JitPackImpl(fakeClient(responses), jitpackTestUrl)
     }
 }

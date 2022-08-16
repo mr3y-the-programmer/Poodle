@@ -13,21 +13,22 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.serialization.json.Json
+import java.util.Queue
 
 internal val mavenCentralTestUrl = "https://search.maven.org/solrsearch/select"
 
-internal val jitpackTestUrl = "https://jitpack.io/api/search"
+internal val jitpackTestUrl = "https://jitpack.io/api"
 
-private val mockEngine: (response: String) -> MockEngine = {
+private val mockEngine: (responses: Queue<String>) -> MockEngine = {
     MockEngine { request ->
         respond(
-            content = ByteReadChannel(it),
+            content = ByteReadChannel(it.poll()!!),
             headers = headersOf(HttpHeaders.ContentType, "application/json")
         )
     }
 }
 
-internal val fakeClient: (response: String) -> HttpClient = {
+internal val fakeClient: (responses: Queue<String>) -> HttpClient = {
     HttpClient(mockEngine(it)) {
         install(Logging) {
             logger = Logger.ANDROID

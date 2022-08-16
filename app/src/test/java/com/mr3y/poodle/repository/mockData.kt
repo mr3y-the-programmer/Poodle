@@ -17,11 +17,11 @@ internal val fakeArtifacts = listOf(
         "aar",
         ZonedDateTime.parse("2021-06-16T20:34:06+02:00[Africa/Cairo]")
     ),
-    Artifact.JitPackArtifact("com.github.zhuinden:simple-stack-extensions"),
-    Artifact.JitPackArtifact("com.github.zhuinden:simple-stack"),
-    Artifact.JitPackArtifact("com.github.zhuinden:state-bundle"),
-    Artifact.JitPackArtifact("com.github.zhuinden:realm-monarchy"),
-    Artifact.JitPackArtifact("com.github.zhuinden:fragmentviewbindingdelegate-kt"),
+    Artifact.JitPackArtifact("com.github.zhuinden:simple-stack-extensions", "1.0.1", ZonedDateTime.parse("2020-12-14T18:23:59.390+02:00[Africa/Cairo]")),
+    Artifact.JitPackArtifact("com.github.zhuinden:simple-stack", "1.0.1", ZonedDateTime.parse("2020-12-14T18:23:59.390+02:00[Africa/Cairo]")),
+    Artifact.JitPackArtifact("com.github.zhuinden:state-bundle", "1.0.1", ZonedDateTime.parse("2020-12-14T18:23:59.390+02:00[Africa/Cairo]")),
+    Artifact.JitPackArtifact("com.github.zhuinden:realm-monarchy", "1.0.1", ZonedDateTime.parse("2020-12-14T18:23:59.390+02:00[Africa/Cairo]")),
+    Artifact.JitPackArtifact("com.github.zhuinden:fragmentviewbindingdelegate-kt", "1.0.1", ZonedDateTime.parse("2020-12-14T18:23:59.390+02:00[Africa/Cairo]")),
 )
 
 internal val fakeArtifactsPart1 = fakeArtifacts.take(2)

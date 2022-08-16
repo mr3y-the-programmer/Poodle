@@ -2,17 +2,19 @@ package com.mr3y.poodle.repository
 
 import java.time.ZonedDateTime
 
-sealed class Artifact(open val fullId: String) {
+sealed class Artifact(open val fullId: String, open val latestVersion: String, open val lastUpdated: ZonedDateTime) {
     data class MavenCentralArtifact(
         override val fullId: String,
-        val latestVersion: String,
+        override val latestVersion: String,
         val packaging: String,
-        val lastUpdated: ZonedDateTime
-    ) : Artifact(fullId)
+        override val lastUpdated: ZonedDateTime
+    ) : Artifact(fullId, latestVersion, lastUpdated)
 
     data class JitPackArtifact(
         override val fullId: String,
-    ) : Artifact(fullId)
+        override val latestVersion: String,
+        override val lastUpdated: ZonedDateTime
+    ) : Artifact(fullId, latestVersion, lastUpdated)
 }
 
 enum class Source {

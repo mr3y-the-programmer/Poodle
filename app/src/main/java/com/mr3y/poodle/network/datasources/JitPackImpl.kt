@@ -4,7 +4,9 @@ import com.mr3y.poodle.di.JitPackBaseUrl
 import com.mr3y.poodle.network.JitPackQueryParameters
 import com.mr3y.poodle.network.exceptions.toPoodleException
 import com.mr3y.poodle.network.models.JitPackArtifact
+import com.mr3y.poodle.network.models.JitPackArtifactCoordinates
 import com.mr3y.poodle.network.models.JitPackResponse
+import com.mr3y.poodle.network.models.PartialJitPackResponse
 import com.mr3y.poodle.network.models.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -13,6 +15,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import javax.inject.Inject
 
 class JitPackImpl @Inject constructor(
@@ -27,7 +31,7 @@ class JitPackImpl @Inject constructor(
             emit(Result.Loading)
             var isGroupIdEmpty = true
             // we have to return a jsonObject & transform it manually as JitPack API is poorly designed
-            val response: JsonObject = client.get(baseUrl) {
+            val response: JsonObject = client.get("$baseUrl/search") {
                 url {
                     requestQueryParameters.groupId.takeIf { it.isNotEmpty() }?.let {
                         isGroupIdEmpty = false
@@ -42,26 +46,39 @@ class JitPackImpl @Inject constructor(
                 }
             }.body()
             val jitPackResponse = response
-                .toJitPackResponse()
+                .toPartialJitPackResponse()
                 // because JitPack API doesn't allow text & groupId in one query
                 .filterRelevantResponses(
                     !isGroupIdEmpty && requestQueryParameters.text.isNotEmpty(),
                     requestQueryParameters.text
-                )
+                ).toFullResponse()
+
             emit(Result.Success(jitPackResponse))
         }.catch { throwable ->
             emit(Result.Error(throwable.toPoodleException(isMavenCentralServer = false)))
         }
     }
 
-    private fun JsonObject.toJitPackResponse(): JitPackResponse {
-        return JitPackResponse(keys.map { JitPackArtifact(id = it) })
+    private fun JsonObject.toPartialJitPackResponse(): PartialJitPackResponse {
+        return PartialJitPackResponse(keys.map { JitPackArtifactCoordinates(fullIdCoordinate = it) })
     }
 
-    private fun JitPackResponse.filterRelevantResponses(enabled: Boolean, text: String): JitPackResponse {
+    private fun PartialJitPackResponse.filterRelevantResponses(enabled: Boolean, text: String): PartialJitPackResponse {
         return if (enabled)
-            copy(artifacts = artifacts.filter { it.id.split(":")[1].contains(text, ignoreCase = true) })
+            copy(coordinates = coordinates.filter { it.fullIdCoordinate.split(":")[1].contains(text, ignoreCase = true) })
         else
             this
+    }
+
+    private suspend fun PartialJitPackResponse.toFullResponse(): JitPackResponse {
+        val artifacts = coordinates.map {
+            val groupAndArtifactId = it.fullIdCoordinate.split(":")
+            Pair(groupAndArtifactId[0], groupAndArtifactId[1])
+        }.associateWith<Pair<String, String>, JsonObject> { (groupId, artifactId) ->
+            client.get("$baseUrl/builds/$groupId/$artifactId/latestOk").body()
+        }.map { (coordinates, metadata) ->
+            JitPackArtifact("${coordinates.first}:${coordinates.second}", metadata["version"]!!.jsonPrimitive.content, metadata["time"]!!.jsonPrimitive.long)
+        }
+        return JitPackResponse(artifacts)
     }
 }

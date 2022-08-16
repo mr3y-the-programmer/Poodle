@@ -14,6 +14,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
+import java.util.LinkedList
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MavenCentralImplTest {
@@ -61,7 +62,8 @@ class MavenCentralImplTest {
 
     @Test
     fun `given a normal serialized response, then verifies it deserializes the response correctly`() = runTest {
-        val client = fakeClient(fakeMavenCentralSerializedResponse)
+        val response = LinkedList<String>().apply { push(fakeMavenCentralSerializedResponse) }
+        val client = fakeClient(response)
         MavenCentralImpl(client, mavenCentralTestUrl).getArtifacts {}.test {
             assertThat(awaitItem()).isEqualTo(Result.Loading)
             assertThat(awaitItem()).isEqualTo(Result.Success(fakeMavenCentralDeserializedResponse))
@@ -71,7 +73,8 @@ class MavenCentralImplTest {
 
     @Test
     fun `given an invalid serialized response, then verifies it catches & emits the error downstream`() = runTest {
-        val client = fakeClient(invalidMavenCentralSerializedResponse)
+        val response = LinkedList<String>().apply { push(invalidMavenCentralSerializedResponse) }
+        val client = fakeClient(response)
         MavenCentralImpl(client, mavenCentralTestUrl).getArtifacts {}.test {
             assertThat(awaitItem()).isEqualTo(Result.Loading)
             val nextItem = awaitItem()
