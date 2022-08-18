@@ -61,9 +61,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mr3y.poodle.domain.SearchUiState
 import com.mr3y.poodle.network.datasources.FilteringPackaging
 import com.mr3y.poodle.network.exceptions.PoodleException
-import com.mr3y.poodle.presentation.SearchScreenState
 import com.mr3y.poodle.presentation.SearchScreenViewModel
 import com.mr3y.poodle.repository.Artifact
 import com.mr3y.poodle.repository.SearchQuery
@@ -76,7 +76,7 @@ import com.mr3y.poodle.ui.theme.PoodleTheme
 @OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
 fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
-    val homeState by viewModel.homeState.collectAsStateWithLifecycle(initialValue = SearchScreenState.Initial)
+    val homeState by viewModel.homeState.collectAsStateWithLifecycle(initialValue = SearchUiState.Initial)
     val bottomSheetState = rememberPoodleModalBottomSheetState(initialValue = PoodleModalBottomSheetValue.Collapsed)
     val query by remember { viewModel.searchQuery }
     val filters by remember {
@@ -107,7 +107,7 @@ fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun SearchDependencies(
-    state: SearchScreenState,
+    state: SearchUiState,
     bottomSheetState: PoodleModalBottomSheetState,
     searchQuery: SearchQuery,
     onSearchQueryTextChanged: (String) -> Unit,
@@ -216,6 +216,16 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                     ) {
                         TextChip(text = artifact.latestVersion, Modifier.wrapContentWidth())
                         TextChip(text = artifact.packaging, Modifier.wrapContentWidth())
+                        TextChip(text = "${artifact.lastUpdated.toLocalDate()}", Modifier.wrapContentWidth())
+                    }
+                }
+                if (artifact is Artifact.JitPackArtifact) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        TextChip(text = artifact.latestVersion, Modifier.wrapContentWidth())
                         TextChip(text = "${artifact.lastUpdated.toLocalDate()}", Modifier.wrapContentWidth())
                     }
                 }
@@ -582,7 +592,7 @@ fun SearchDependenciesPreview() {
     PoodleTheme(false) {
         val bottomSheetState = rememberPoodleModalBottomSheetState(initialValue = PoodleModalBottomSheetValue.Collapsed)
         SearchDependencies(
-            SearchScreenState.Initial,
+            SearchUiState.Initial,
             bottomSheetState,
             SearchQuery.EMPTY,
             {},

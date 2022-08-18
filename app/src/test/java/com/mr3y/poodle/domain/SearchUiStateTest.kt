@@ -1,4 +1,4 @@
-package com.mr3y.poodle.presentation
+package com.mr3y.poodle.domain
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.TruthJUnit.assume
@@ -19,14 +19,14 @@ import org.junit.runner.RunWith
 import java.time.ZonedDateTime
 
 @RunWith(Enclosed::class)
-class SearchScreenStateTest {
+class SearchUiStateTest {
 
     @RunWith(TestParameterInjector::class)
     class StatePropertiesTest {
 
         @Test
         fun `given no results from either source, then make sure it is an initial state`() {
-            val state = SearchScreenState(mavenCentralArtifacts = null, jitPackArtifacts = null)
+            val state = SearchUiState(mavenCentralArtifacts = null, jitPackArtifacts = null)
 
             assertThat(state.isIdle).isEqualTo(true)
             assertThat(state.isLoading).isEqualTo(false)
@@ -49,7 +49,7 @@ class SearchScreenStateTest {
                 assume().that(jitPackResult).isEqualTo(DataSourceResult.Loading)
             }
 
-            val state = SearchScreenState(mavenCentralResult.toRealResult(), jitPackResult.toRealResult())
+            val state = SearchUiState(mavenCentralResult.toRealResult(), jitPackResult.toRealResult())
 
             assertThat(state.isIdle).isEqualTo(false)
             assertThat(state.isLoading).isEqualTo(true)
@@ -62,7 +62,7 @@ class SearchScreenStateTest {
         fun `given both data sources returned artifacts, then make sure it is success state with no exceptions`() {
             val mavenCentralArtifacts = listOf(Artifact.MavenCentralArtifact("mavenCentral", "1.8", "jar", ZonedDateTime.now()))
             val jitPackArtifacts = listOf(Artifact.JitPackArtifact("jitpack", "2.1", ZonedDateTime.now()))
-            val state = SearchScreenState(Result.Success(mavenCentralArtifacts), Result.Success(jitPackArtifacts))
+            val state = SearchUiState(Result.Success(mavenCentralArtifacts), Result.Success(jitPackArtifacts))
 
             assertThat(state.isIdle).isEqualTo(false)
             assertThat(state.isLoading).isEqualTo(false)
@@ -75,7 +75,7 @@ class SearchScreenStateTest {
 
         @Test
         fun `given both data sources returned exceptions, then make sure it is error state with no artifacts`() {
-            val state = SearchScreenState(Result.Error(DecodingException("", null)), Result.Error(UnknownException("", null)))
+            val state = SearchUiState(Result.Error(DecodingException("", null)), Result.Error(UnknownException("", null)))
 
             assertThat(state.isIdle).isEqualTo(false)
             assertThat(state.isLoading).isEqualTo(false)
@@ -93,7 +93,7 @@ class SearchScreenStateTest {
             doesMavenCentralSucceeded: Boolean,
             doesJitPackSucceeded: Boolean
         ) {
-            val state = SearchScreenState(
+            val state = SearchUiState(
                 if (doesMavenCentralSucceeded) Result.Success(emptyList()) else Result.Error(),
                 if (doesJitPackSucceeded) Result.Success(emptyList()) else Result.Error()
             )
@@ -112,7 +112,7 @@ class SearchScreenStateTest {
             mavenCentralResult: DataSourceResult?,
             jitPackResult: DataSourceResult?,
         ) {
-            val state = SearchScreenState(mavenCentralResult?.toRealResult(), jitPackResult?.toRealResult())
+            val state = SearchUiState(mavenCentralResult?.toRealResult(), jitPackResult?.toRealResult())
 
             assertThat(state.isIdle).isEqualTo(false)
             assertThat(state.isLoading).isEqualTo(false)
@@ -128,7 +128,7 @@ class SearchScreenStateTest {
             mavenCentralResult: DataSourceResult?,
             jitPackResult: DataSourceResult?,
         ) {
-            val state = SearchScreenState(mavenCentralResult?.toRealResult(), jitPackResult?.toRealResult())
+            val state = SearchUiState(mavenCentralResult?.toRealResult(), jitPackResult?.toRealResult())
 
             assertThat(state.isIdle).isEqualTo(false)
             assertThat(state.isLoading).isEqualTo(false)
@@ -158,7 +158,7 @@ class SearchScreenStateTest {
     class StateModificationTest {
         @Test
         fun `given an initial state, when we try to reduce it a number of times, then make sure every reduced state is a valid state`() {
-            val state0 = SearchScreenState.Initial
+            val state0 = SearchUiState.Initial
             state0.assertIsIdle()
 
             val state1 = state0.reduce(SearchResult(Result.Loading, Source.MavenCentral))
@@ -184,29 +184,29 @@ class SearchScreenStateTest {
             state6.assertArtifactsAndExceptionsEmpty()
         }
 
-        private fun SearchScreenState.assertIsIdle() {
+        private fun SearchUiState.assertIsIdle() {
             assertThat(isIdle).isEqualTo(true)
             assertThat(isLoading).isEqualTo(false)
         }
 
-        private fun SearchScreenState.assertIsLoading() {
+        private fun SearchUiState.assertIsLoading() {
             assertThat(isIdle).isEqualTo(false)
             assertThat(isLoading).isEqualTo(true)
         }
 
-        private fun SearchScreenState.assertArtifactsNotEmpty() {
+        private fun SearchUiState.assertArtifactsNotEmpty() {
             assertThat(shouldShowArtifacts).isEqualTo(false)
             assertThat(shouldShowExceptions).isEqualTo(false)
             assertThat(artifacts).isNotEqualTo(emptyList<Artifact>())
         }
 
-        private fun SearchScreenState.assertArtifactsAndExceptionsNotEmpty() {
+        private fun SearchUiState.assertArtifactsAndExceptionsNotEmpty() {
             assertArtifactsNotEmpty()
             assertThat(exceptions).isNotEqualTo(emptyList<PoodleException>())
             assertThat(shouldShowArtifactsAndExceptions).isEqualTo(true)
         }
 
-        private fun SearchScreenState.assertArtifactsAndExceptionsEmpty() {
+        private fun SearchUiState.assertArtifactsAndExceptionsEmpty() {
             assertThat(shouldShowArtifacts).isEqualTo(false)
             assertThat(shouldShowExceptions).isEqualTo(false)
             assertThat(shouldShowArtifactsAndExceptions).isEqualTo(false)

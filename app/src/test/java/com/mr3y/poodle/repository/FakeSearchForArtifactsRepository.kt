@@ -2,7 +2,7 @@ package com.mr3y.poodle.repository
 
 import kotlinx.coroutines.flow.Flow
 
-class FakeSearchForArtifactsRepository : SearchForArtifactsRepository {
+class FakeSearchForArtifactsRepository(private val seed: Flow<SearchResult>) : SearchForArtifactsRepository {
 
     // TODO:
 
@@ -11,6 +11,6 @@ class FakeSearchForArtifactsRepository : SearchForArtifactsRepository {
         searchOnMaven: Boolean,
         searchOnJitPack: Boolean
     ): Flow<SearchResult> {
-        TODO("Not yet implemented")
+        return seed
     }
 }
