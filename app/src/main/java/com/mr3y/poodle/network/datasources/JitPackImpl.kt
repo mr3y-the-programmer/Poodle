@@ -11,14 +11,21 @@ import com.mr3y.poodle.network.models.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class JitPackImpl @Inject constructor(
     private val client: HttpClient,
     @JitPackBaseUrl
@@ -70,15 +77,21 @@ class JitPackImpl @Inject constructor(
             this
     }
 
-    private suspend fun PartialJitPackResponse.toFullResponse(): JitPackResponse {
-        val artifacts = coordinates.map {
-            val groupAndArtifactId = it.fullIdCoordinate.split(":")
-            Pair(groupAndArtifactId[0], groupAndArtifactId[1])
-        }.associateWith<Pair<String, String>, JsonObject> { (groupId, artifactId) ->
-            client.get("$baseUrl/builds/$groupId/$artifactId/latestOk").body()
-        }.map { (coordinates, metadata) ->
-            JitPackArtifact("${coordinates.first}:${coordinates.second}", metadata["version"]!!.jsonPrimitive.content, metadata["time"]!!.jsonPrimitive.long)
-        }
-        return JitPackResponse(artifacts)
+    private suspend fun PartialJitPackResponse.toFullResponse(concurrency: Int = 4): JitPackResponse = coroutineScope {
+        val semaphore = Semaphore(concurrency)
+        val artifacts = coordinates.map { coordinates ->
+            semaphore.acquire()
+            async(Dispatchers.IO.limitedParallelism(concurrency)) {
+                try {
+                    val groupAndArtifact = coordinates.fullIdCoordinate.split(":").let { Pair(it[0], it[1]) }
+                    val (groupId, artifactName) = groupAndArtifact.first to groupAndArtifact.second
+                    val metadata: JsonObject = client.get("$baseUrl/builds/$groupId/$artifactName/latestOk").body()
+                    JitPackArtifact("$groupId:$artifactName", metadata["version"]!!.jsonPrimitive.content, metadata["time"]!!.jsonPrimitive.long)
+                } finally {
+                    semaphore.release()
+                }
+            }
+        }.awaitAll()
+        JitPackResponse(artifacts)
     }
 }
