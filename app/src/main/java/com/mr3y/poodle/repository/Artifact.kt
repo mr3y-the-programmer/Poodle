@@ -2,7 +2,7 @@ package com.mr3y.poodle.repository
 
 import java.time.ZonedDateTime
 
-sealed class Artifact(open val fullId: String, open val latestVersion: String, open val lastUpdated: ZonedDateTime) {
+sealed class Artifact(open val fullId: String, open val latestVersion: String?, open val lastUpdated: ZonedDateTime?) {
     data class MavenCentralArtifact(
         override val fullId: String,
         override val latestVersion: String,
@@ -12,8 +12,8 @@ sealed class Artifact(open val fullId: String, open val latestVersion: String, o
 
     data class JitPackArtifact(
         override val fullId: String,
-        override val latestVersion: String,
-        override val lastUpdated: ZonedDateTime
+        override val latestVersion: String?,
+        override val lastUpdated: ZonedDateTime?
     ) : Artifact(fullId, latestVersion, lastUpdated)
 }
 

@@ -84,7 +84,7 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
             Artifact.JitPackArtifact(
                 it.groupAndArtifactIdCoordinates,
                 it.version,
-                ZonedDateTime.ofInstant(Instant.ofEpochMilli(it.timestamp), ZoneId.systemDefault())
+                if (it.timestamp == null) null else ZonedDateTime.ofInstant(Instant.ofEpochMilli(it.timestamp), ZoneId.systemDefault())
             )
         }
     }

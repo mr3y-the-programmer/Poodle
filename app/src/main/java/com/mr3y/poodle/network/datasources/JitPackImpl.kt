@@ -11,6 +11,7 @@ import com.mr3y.poodle.network.models.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -85,13 +86,18 @@ class JitPackImpl @Inject constructor(
                 try {
                     val groupAndArtifact = coordinates.fullIdCoordinate.split(":").let { Pair(it[0], it[1]) }
                     val (groupId, artifactName) = groupAndArtifact.first to groupAndArtifact.second
-                    val metadata: JsonObject = client.get("$baseUrl/builds/$groupId/$artifactName/latestOk").body()
-                    JitPackArtifact("$groupId:$artifactName", metadata["version"]!!.jsonPrimitive.content, metadata["time"]!!.jsonPrimitive.long)
+                    val response = client.get("$baseUrl/builds/$groupId/$artifactName/latestOk")
+                    if (response.status.isSuccess()) {
+                        val metadata = response.body<JsonObject>()
+                        JitPackArtifact("$groupId:$artifactName", metadata["version"]?.jsonPrimitive?.content, metadata["time"]?.jsonPrimitive?.long)
+                    } else {
+                        JitPackArtifact("", null, null)
+                    }
                 } finally {
                     semaphore.release()
                 }
             }
         }.awaitAll()
-        JitPackResponse(artifacts)
+        JitPackResponse(artifacts.filterNot { it.groupAndArtifactIdCoordinates.isEmpty() })
     }
 }

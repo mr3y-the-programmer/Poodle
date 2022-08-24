@@ -225,8 +225,8 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        TextChip(text = artifact.latestVersion, Modifier.wrapContentWidth())
-                        TextChip(text = "${artifact.lastUpdated.toLocalDate()}", Modifier.wrapContentWidth())
+                        TextChip(text = artifact.latestVersion ?: "N/A", Modifier.wrapContentWidth())
+                        TextChip(text = "${artifact.lastUpdated?.toLocalDate() ?: "N/A"}", Modifier.wrapContentWidth())
                     }
                 }
                 val source = if (artifact is Artifact.MavenCentralArtifact) "MavenCentral" else "JitPack"

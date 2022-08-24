@@ -20,6 +20,6 @@ data class JitPackResponse(
 @Serializable
 data class JitPackArtifact(
     val groupAndArtifactIdCoordinates: String,
-    val version: String,
-    val timestamp: Long,
+    val version: String?,
+    val timestamp: Long?,
 )
