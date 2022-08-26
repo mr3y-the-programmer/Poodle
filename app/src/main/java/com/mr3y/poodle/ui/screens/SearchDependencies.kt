@@ -1,4 +1,4 @@
-package com.mr3y.poodle
+package com.mr3y.poodle.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mr3y.poodle.R
 import com.mr3y.poodle.domain.SearchUiState
 import com.mr3y.poodle.network.datasources.FilteringPackaging
 import com.mr3y.poodle.network.exceptions.PoodleException
