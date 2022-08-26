@@ -1,14 +1,11 @@
 package com.mr3y.poodle.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,10 +18,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -37,20 +31,13 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Switch
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -63,14 +50,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -85,6 +67,12 @@ import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.presentation.SearchScreenViewModel
 import com.mr3y.poodle.repository.Artifact
 import com.mr3y.poodle.repository.SearchQuery
+import com.mr3y.poodle.ui.components.ArtworkWithText
+import com.mr3y.poodle.ui.components.FilterHeader
+import com.mr3y.poodle.ui.components.FilterSwitchField
+import com.mr3y.poodle.ui.components.FilterTextField
+import com.mr3y.poodle.ui.components.PoodleTopAppBar
+import com.mr3y.poodle.ui.components.TextChip
 import com.mr3y.poodle.ui.theme.PoodleTheme
 import kotlinx.coroutines.launch
 
@@ -362,27 +350,6 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun TextChip(text: String, modifier: Modifier = Modifier) {
-    Chip(
-        onClick = { },
-        colors = ChipDefaults.chipColors(
-            backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.12f)
-                .compositeOver(MaterialTheme.colors.surface),
-            contentColor = MaterialTheme.colors.primary
-        ),
-        modifier = modifier
-    ) {
-        Text(
-            text = text,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
 @Composable
 private fun Error(exception: PoodleException?, modifier: Modifier = Modifier) {
     val message = buildString {
@@ -395,99 +362,6 @@ private fun Error(exception: PoodleException?, modifier: Modifier = Modifier) {
         text = message,
         modifier
     )
-}
-
-@Composable
-private fun ArtworkWithText(
-    drawableResId: Int,
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(140.dp))
-        Image(
-            painter = painterResource(id = drawableResId),
-            contentDescription = null,
-            modifier = Modifier.size(240.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = text)
-    }
-}
-
-@Composable
-fun PoodleTopAppBar(
-    initialSearchQuery: String,
-    onSearchQueryValueChanged: (String) -> Unit,
-    isFilteringEnabled: Boolean,
-    onFilterItemsClicked: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        TextField(
-            value = initialSearchQuery,
-            onValueChange = onSearchQueryValueChanged,
-            modifier = Modifier.weight(6f),
-            placeholder = {
-                Text(text = "Search by name, groupId, or tag.")
-            },
-            leadingIcon = {
-                Icon(
-                    painter = rememberVectorPainter(image = Icons.Filled.Search),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            trailingIcon =
-            if (initialSearchQuery.isEmpty())
-                null
-            else {
-                {
-                    Icon(
-                        painter = rememberVectorPainter(image = Icons.Filled.Close),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable { onSearchQueryValueChanged("") }
-                    )
-                }
-            },
-            colors = TextFieldDefaults.textFieldColors(
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent,
-            ),
-            shape = RoundedCornerShape(40.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
-                onSearch = {}
-            )
-        )
-        IconButton(
-            modifier = Modifier
-                .weight(1f)
-                .semantics { },
-            onClick = onFilterItemsClicked,
-            enabled = isFilteringEnabled
-        ) {
-            Icon(
-                painter = rememberVectorPainter(image = Icons.Filled.FilterAlt),
-                contentDescription = null,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-    }
 }
 
 internal data class PoodleFiltersState(
@@ -637,80 +511,6 @@ private fun PoodleBottomSheet(
             modifier = childModifier
         )
     }
-}
-
-@Composable
-fun FilterHeader(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = "Filters")
-        Icon(
-            painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowUp),
-            contentDescription = null,
-            modifier = Modifier.size(32.dp)
-        )
-    }
-}
-
-@Composable
-fun FilterSwitchField(
-    label: String,
-    enabled: Boolean,
-    onToggled: (Boolean) -> Unit,
-) {
-    Text(
-        text = label,
-    )
-    Switch(
-        checked = enabled,
-        onCheckedChange = onToggled,
-    )
-}
-
-@Composable
-fun FilterTextField(
-    initialValue: String,
-    onValueChange: (newValue: String) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
-) {
-    TextField(
-        value = initialValue,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        singleLine = true,
-        label = {
-            Text(text = label)
-        },
-        trailingIcon =
-        if (initialValue.isEmpty())
-            null
-        else {
-            {
-                Icon(
-                    painter = rememberVectorPainter(image = Icons.Filled.Close),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable { onValueChange("") }
-                )
-            }
-        },
-        keyboardOptions = keyboardOptions,
-        shape = RoundedCornerShape(4.dp),
-        colors = TextFieldDefaults.textFieldColors(
-            errorIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        )
-    )
 }
 
 @Preview
