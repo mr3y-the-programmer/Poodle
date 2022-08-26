@@ -52,9 +52,9 @@ class SearchForArtifactsUseCase @Inject constructor(
                 isSearchOnJitPackEnabled
             ).collect {
                 if (it.second == Source.MavenCentral) {
-                    mavenCentralCachedSearchResult = if (it.first is Result.Success) it else null
+                    mavenCentralCachedSearchResult = it
                 } else {
-                    jitPackCachedSearchResult = if (it.first is Result.Success) it else null
+                    jitPackCachedSearchResult = it
                 }
                 cachedSearchQuery = searchQuery
                 emit(it)
