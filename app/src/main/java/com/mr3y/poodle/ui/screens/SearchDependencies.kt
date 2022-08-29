@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -18,12 +17,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ChipDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -35,7 +31,6 @@ import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.rememberModalBottomSheetState
@@ -52,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,16 +55,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mr3y.poodle.R
 import com.mr3y.poodle.domain.SearchUiState
-import com.mr3y.poodle.network.datasources.FilteringPackaging
 import com.mr3y.poodle.network.exceptions.PoodleException
 import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.presentation.SearchScreenViewModel
 import com.mr3y.poodle.repository.Artifact
 import com.mr3y.poodle.repository.SearchQuery
 import com.mr3y.poodle.ui.components.ArtworkWithText
-import com.mr3y.poodle.ui.components.FilterHeader
-import com.mr3y.poodle.ui.components.FilterSwitchField
-import com.mr3y.poodle.ui.components.FilterTextField
+import com.mr3y.poodle.ui.components.FiltersBottomSheet
+import com.mr3y.poodle.ui.components.FiltersState
 import com.mr3y.poodle.ui.components.PoodleTopAppBar
 import com.mr3y.poodle.ui.components.TextChip
 import com.mr3y.poodle.ui.theme.PoodleTheme
@@ -84,7 +76,7 @@ fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
     val query by remember { viewModel.searchQuery }
     val filters by remember {
         derivedStateOf {
-            PoodleFiltersState(
+            FiltersState(
                 viewModel.isSearchOnMavenEnabled.value,
                 viewModel::toggleSearchOnMaven,
                 viewModel.isSearchOnJitPackEnabled.value,
@@ -114,14 +106,14 @@ internal fun SearchDependencies(
     bottomSheetState: ModalBottomSheetState,
     searchQuery: SearchQuery,
     onSearchQueryTextChanged: (String) -> Unit,
-    filtersState: PoodleFiltersState
+    filtersState: FiltersState
 ) {
     val scope = rememberCoroutineScope()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         modifier = Modifier.fillMaxSize(),
         sheetContent = {
-            PoodleBottomSheet(filtersState)
+            FiltersBottomSheet(filtersState)
         }
     ) {
         val scaffoldState = rememberScaffoldState()
@@ -364,155 +356,6 @@ private fun Error(exception: PoodleException?, modifier: Modifier = Modifier) {
     )
 }
 
-internal data class PoodleFiltersState(
-    val isMavenCentralEnabled: Boolean,
-    val onMavenCentralSwitchToggled: (Boolean) -> Unit,
-    val isJitpackEnabled: Boolean,
-    val onJitpackSwitchToggled: (Boolean) -> Unit,
-    val groupIdValue: String,
-    val onGroupIdValueChanged: (String) -> Unit,
-    val packagingValue: String,
-    val onPackagingValueChanged: (String) -> Unit,
-    val tagsValue: Set<String>,
-    val onTagsValueChanged: (Set<String>) -> Unit,
-    val limitValue: Int?,
-    val onLimitValueChanged: (Int?) -> Unit,
-    val classSimpleNameValue: String,
-    val onClassSimpleNameValueChanged: (String) -> Unit,
-    val classFQNValue: String,
-    val onClassFQNValueChanged: (String) -> Unit,
-) {
-    companion object {
-        val Default = PoodleFiltersState(
-            true,
-            {},
-            true,
-            {},
-            "",
-            {},
-            "",
-            {},
-            emptySet(),
-            {},
-            null,
-            {},
-            "",
-            {},
-            "",
-            {}
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun PoodleBottomSheet(
-    state: PoodleFiltersState,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        FilterHeader()
-        val childModifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-        Row(
-            modifier = childModifier,
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            repeat(2) { index ->
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterSwitchField(
-                        label = if (index == 0) "MavenCentral" else "Jitpack",
-                        enabled = if (index == 0) state.isMavenCentralEnabled else state.isJitpackEnabled,
-                        onToggled = if (index == 0) state.onMavenCentralSwitchToggled else state.onJitpackSwitchToggled
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = childModifier,
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            FilterTextField(
-                initialValue = state.groupIdValue,
-                onValueChange = state.onGroupIdValueChanged,
-                label = "GroupId:",
-                modifier = Modifier.weight(1f)
-            )
-            FilterTextField(
-                initialValue = state.limitValue?.toString() ?: "",
-                onValueChange = { state.onLimitValueChanged(it.toIntOrNull()) },
-                label = "Limit:",
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-        }
-        Row(
-            modifier = childModifier,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(text = "Packaging *: ")
-            val packages = remember { FilteringPackaging }
-            repeat(3) { index ->
-                FilterChip(
-                    selected = state.packagingValue == packages.elementAt(index),
-                    onClick = {
-                        val newValue = if (state.packagingValue == packages.elementAt(index)) {
-                            ""
-                        } else {
-                            packages.elementAt(index)
-                        }
-                        state.onPackagingValueChanged(newValue)
-                    },
-                    border = ChipDefaults.outlinedBorder,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
-                    selectedIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Done,
-                            contentDescription = null,
-                            modifier = Modifier.requiredSize(ChipDefaults.SelectedIconSize)
-                        )
-                    }
-                ) {
-                    Text(text = packages.elementAt(index))
-                }
-            }
-        }
-        Column(
-            modifier = childModifier,
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(text = "Advanced *")
-            FilterTextField(
-                initialValue = state.classSimpleNameValue,
-                onValueChange = state.onClassSimpleNameValueChanged,
-                label = "Contains class simple name:",
-                modifier = Modifier.fillMaxWidth()
-            )
-            FilterTextField(
-                initialValue = state.classFQNValue,
-                onValueChange = state.onClassFQNValueChanged,
-                label = "Contains class FQN:",
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        Text(
-            text = "*: only mavenCentral supported",
-            modifier = childModifier
-        )
-    }
-}
-
 @Preview
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
@@ -524,7 +367,7 @@ fun SearchDependenciesPreview() {
             bottomSheetState,
             SearchQuery.EMPTY,
             {},
-            PoodleFiltersState.Default
+            FiltersState.Default
         )
     }
 }
