@@ -128,52 +128,65 @@ internal fun SearchDependencies(
                 )
             }
         ) { contentPadding ->
-            val contentModifier = Modifier
-                .padding(contentPadding)
-                .fillMaxSize()
             if (state == SearchUiState.Initial) {
-                Initial(modifier = contentModifier)
+                Initial(modifier = Modifier.padding(contentPadding).fillMaxSize())
             } else {
                 val selectedTabIndex = rememberSaveable(Unit) { mutableStateOf(0) }
                 val tabRowHeight = 56.dp
-                val exactlyOneTabExists = (state.mavenCentralArtifacts == null) xor (state.jitPackArtifacts == null)
                 TabRow(
-                    selectedTabIndex = if (exactlyOneTabExists) 0 else selectedTabIndex.value,
+                    selectedTabIndex = selectedTabIndex.value,
+                    onSelectingNewTab = { selectedTabIndex.value = it },
+                    uiState = state,
                     modifier = Modifier
                         .padding(top = contentPadding.calculateTopPadding())
-                        .height(tabRowHeight),
-                    backgroundColor = MaterialTheme.colors.surface,
-                    contentColor = MaterialTheme.colors.primary
-                ) {
-                    if (exactlyOneTabExists) {
-                        Tab(selected = true, onClick = { }) {
-                            val label = if (state.mavenCentralArtifacts != null) "MavenCentral" else "JitPack"
-                            Text(text = label)
-                        }
-                    } else {
-                        for ((index, tabLabel) in TabLabel.values().withIndex()) {
-                            Tab(selected = index == selectedTabIndex.value, onClick = { selectedTabIndex.value = index }) {
-                                Text(text = tabLabel.name)
-                            }
-                        }
-                    }
-                }
-                val contentState = when {
-                    state.mavenCentralArtifacts != null && state.jitPackArtifacts != null -> {
-                        if (selectedTabIndex.value == 0) state.mavenCentralArtifacts else state.jitPackArtifacts
-                    }
-                    state.mavenCentralArtifacts == null && state.jitPackArtifacts != null -> state.jitPackArtifacts
-                    state.mavenCentralArtifacts != null && state.jitPackArtifacts == null -> state.mavenCentralArtifacts
-                    else -> throw IllegalStateException("Tabs shouldn't be visible if UiState == Initial")
-                }
+                        .height(tabRowHeight)
+                )
                 TabContent(
-                    contentState,
+                    state.getArtifactsBasedOnIndex(selectedTabIndex.value),
                     searchQuery.text,
                     modifier = Modifier
                         .padding(contentPadding)
                         .padding(top = tabRowHeight)
                         .fillMaxSize()
                 )
+            }
+        }
+    }
+}
+
+enum class TabLabel {
+    MavenCentral,
+
+    JitPack
+}
+
+@Composable
+fun TabRow(
+    selectedTabIndex: Int,
+    onSelectingNewTab: (index: Int) -> Unit,
+    uiState: SearchUiState,
+    modifier: Modifier = Modifier
+) {
+    val exactlyOneTabExists = (uiState.mavenCentralArtifacts == null) xor (uiState.jitPackArtifacts == null)
+    TabRow(
+        selectedTabIndex = if (exactlyOneTabExists) 0 else selectedTabIndex,
+        modifier = modifier,
+        backgroundColor = MaterialTheme.colors.surface,
+        contentColor = MaterialTheme.colors.primary,
+    ) {
+        if (exactlyOneTabExists) {
+            Tab(selected = true, onClick = { }) {
+                val label = if (uiState.mavenCentralArtifacts != null) "MavenCentral" else "JitPack"
+                Text(text = label)
+            }
+        } else {
+            for ((index, tabLabel) in TabLabel.values().withIndex()) {
+                Tab(
+                    selected = index == selectedTabIndex,
+                    onClick = { onSelectingNewTab(index) }
+                ) {
+                    Text(text = tabLabel.name)
+                }
             }
         }
     }
@@ -211,12 +224,6 @@ fun TabContent(
             Error(exception = content.exception, modifier)
         }
     }
-}
-
-enum class TabLabel {
-    MavenCentral,
-
-    JitPack
 }
 
 @Composable
@@ -354,6 +361,17 @@ private fun Error(exception: PoodleException?, modifier: Modifier = Modifier) {
         text = message,
         modifier
     )
+}
+
+private fun SearchUiState.getArtifactsBasedOnIndex(selectedTabIndex: Int): Result<List<Artifact>> {
+    return when {
+        mavenCentralArtifacts != null && jitPackArtifacts != null -> {
+            if (selectedTabIndex == 0) mavenCentralArtifacts else jitPackArtifacts
+        }
+        mavenCentralArtifacts == null && jitPackArtifacts != null -> jitPackArtifacts
+        mavenCentralArtifacts != null && jitPackArtifacts == null -> mavenCentralArtifacts
+        else -> throw IllegalStateException("Tabs shouldn't be visible if UiState == Initial")
+    }
 }
 
 @Preview

@@ -25,7 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mr3y.poodle.ui.theme.PoodleTheme
 
 @Composable
 internal fun TopAppBar(
@@ -96,5 +98,19 @@ internal fun TopAppBar(
                 modifier = Modifier.size(32.dp)
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TopAppBarPreview() {
+    PoodleTheme(false) {
+        TopAppBar(
+            initialSearchQuery = "compose",
+            onSearchQueryValueChanged = {},
+            isFilteringEnabled = true,
+            onFilterItemsClicked = { },
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
