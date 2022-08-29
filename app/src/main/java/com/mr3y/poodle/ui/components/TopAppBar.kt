@@ -28,7 +28,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun PoodleTopAppBar(
+internal fun TopAppBar(
     initialSearchQuery: String,
     onSearchQueryValueChanged: (String) -> Unit,
     isFilteringEnabled: Boolean,

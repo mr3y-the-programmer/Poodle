@@ -63,8 +63,8 @@ import com.mr3y.poodle.repository.SearchQuery
 import com.mr3y.poodle.ui.components.ArtworkWithText
 import com.mr3y.poodle.ui.components.FiltersBottomSheet
 import com.mr3y.poodle.ui.components.FiltersState
-import com.mr3y.poodle.ui.components.PoodleTopAppBar
 import com.mr3y.poodle.ui.components.TextChip
+import com.mr3y.poodle.ui.components.TopAppBar
 import com.mr3y.poodle.ui.theme.PoodleTheme
 import kotlinx.coroutines.launch
 
@@ -120,7 +120,7 @@ internal fun SearchDependencies(
         Scaffold(
             scaffoldState = scaffoldState,
             topBar = {
-                PoodleTopAppBar(
+                TopAppBar(
                     searchQuery.text,
                     onSearchQueryTextChanged,
                     isFilteringEnabled = state != SearchUiState.Initial,
