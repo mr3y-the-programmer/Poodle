@@ -8,6 +8,7 @@ import com.mr3y.poodle.repository.SearchForArtifactsRepository
 import com.mr3y.poodle.repository.SearchQuery
 import com.mr3y.poodle.repository.SearchResult
 import com.mr3y.poodle.repository.Source
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -44,6 +45,7 @@ class SearchForArtifactsUseCase @Inject constructor(
                 !isSearchOnMavenCentralEnabled -> return flowOf(jitPackCachedSearchResult)
                 !isSearchOnJitPackEnabled -> return flowOf(mavenCentralCachedSearchResult)
             }
+            Napier.i("Retrieving Cached result, since nothing has changed in the search query")
         }
         return flow {
             searchForArtifactsRepository.searchByQuery(
@@ -57,6 +59,7 @@ class SearchForArtifactsUseCase @Inject constructor(
                     jitPackCachedSearchResult = it
                 }
                 cachedSearchQuery = searchQuery
+                Napier.i("$searchQuery has been cached!")
                 emit(it)
             }
         }.flowOn(coroutineContext)

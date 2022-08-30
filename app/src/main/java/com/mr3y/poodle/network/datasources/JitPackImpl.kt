@@ -8,6 +8,7 @@ import com.mr3y.poodle.network.models.JitPackArtifactCoordinates
 import com.mr3y.poodle.network.models.JitPackResponse
 import com.mr3y.poodle.network.models.PartialJitPackResponse
 import com.mr3y.poodle.network.models.Result
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -61,8 +62,10 @@ class JitPackImpl @Inject constructor(
                     requestQueryParameters.text
                 ).toFullResponse()
 
+            Napier.d("$jitPackResponse")
             emit(Result.Success(jitPackResponse))
         }.catch { throwable ->
+            Napier.e("An exception occurred while trying to get jitPack artifacts", throwable)
             emit(Result.Error(throwable.toPoodleException(isMavenCentralServer = false)))
         }
     }
@@ -91,6 +94,7 @@ class JitPackImpl @Inject constructor(
                         val metadata = response.body<JsonObject>()
                         JitPackArtifact("$groupId:$artifactName", metadata["version"]?.jsonPrimitive?.content, metadata["time"]?.jsonPrimitive?.long)
                     } else {
+                        Napier.w("$groupId:$artifactName requires authentication to get additional metadata about it")
                         JitPackArtifact("", null, null)
                     }
                 } finally {

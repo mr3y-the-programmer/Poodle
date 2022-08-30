@@ -66,6 +66,7 @@ import com.mr3y.poodle.ui.components.FiltersState
 import com.mr3y.poodle.ui.components.TextChip
 import com.mr3y.poodle.ui.components.TopAppBar
 import com.mr3y.poodle.ui.theme.PoodleTheme
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
@@ -370,7 +371,11 @@ private fun SearchUiState.getArtifactsBasedOnIndex(selectedTabIndex: Int): Resul
         }
         mavenCentralArtifacts == null && jitPackArtifacts != null -> jitPackArtifacts
         mavenCentralArtifacts != null && jitPackArtifacts == null -> mavenCentralArtifacts
-        else -> throw IllegalStateException("Tabs shouldn't be visible if UiState == Initial")
+        else -> {
+            val message = "Tabs shouldn't be visible if UiState == Initial"
+            Napier.wtf(message)
+            throw IllegalStateException(message)
+        }
     }
 }
 

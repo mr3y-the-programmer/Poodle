@@ -5,6 +5,7 @@ import com.mr3y.poodle.network.MavenCentralQueryParameters
 import com.mr3y.poodle.network.exceptions.toPoodleException
 import com.mr3y.poodle.network.models.MavenCentralResponse
 import com.mr3y.poodle.network.models.Result
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -32,9 +33,10 @@ class MavenCentralImpl @Inject constructor(
                 parameter("rows", requestQueryParams.limit.takeIf { it > 0 && it != Int.MAX_VALUE })
                 parameter("wt", "json")
             }.body()
+            Napier.d("$response")
             emit(Result.Success(response))
         }.catch { throwable ->
-            // TODO: log that exception with Crash Reporting tool
+            Napier.e("An exception occurred while trying to get mavenCentral artifacts", throwable)
             emit(Result.Error(throwable.toPoodleException(isMavenCentralServer = true)))
         }
     }
