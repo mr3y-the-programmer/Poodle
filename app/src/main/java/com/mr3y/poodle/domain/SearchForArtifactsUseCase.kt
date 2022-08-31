@@ -29,7 +29,7 @@ class SearchForArtifactsUseCase @Inject constructor(
     @VisibleForTesting
     internal var mavenCentralCachedSearchResult: SearchResult? = null
 
-    suspend operator fun invoke(
+    operator fun invoke(
         searchQuery: SearchQuery,
         isSearchOnMavenCentralEnabled: Boolean,
         isSearchOnJitPackEnabled: Boolean
