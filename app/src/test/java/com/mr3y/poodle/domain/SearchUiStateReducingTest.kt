@@ -1,7 +1,6 @@
 package com.mr3y.poodle.domain
 
 import com.google.common.truth.Truth.assertThat
-import com.mr3y.poodle.network.exceptions.ClientException
 import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.repository.Artifact
 import com.mr3y.poodle.repository.SearchResult
@@ -26,11 +25,11 @@ class SearchUiStateReducingTest {
         assertThat(state3).isEqualTo(SearchUiState(Result.Success(artifacts), Result.Loading))
 
         val state4 =
-            state3.reduce(SearchResult(Result.Error(ClientException("", null)), Source.JitPack))
+            state3.reduce(SearchResult(Result.Error(), Source.JitPack))
         assertThat(state4).isEqualTo(
             SearchUiState(
                 Result.Success(artifacts),
-                Result.Error(ClientException("", null))
+                Result.Error()
             )
         )
 

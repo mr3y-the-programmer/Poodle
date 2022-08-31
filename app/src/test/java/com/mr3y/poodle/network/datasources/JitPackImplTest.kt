@@ -3,7 +3,6 @@ package com.mr3y.poodle.network.datasources
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.mr3y.poodle.network.JitPackQueryParameters
-import com.mr3y.poodle.network.exceptions.DecodingException
 import com.mr3y.poodle.network.fakeClient
 import com.mr3y.poodle.network.fakeJitPackDeserializedResponse
 import com.mr3y.poodle.network.fakeJitPackResponseMetadata
@@ -82,8 +81,6 @@ class JitPackImplTest {
             assertThat(awaitItem()).isEqualTo(Result.Loading)
             val nextItem = awaitItem()
             assertThat(nextItem).isInstanceOf(Result.Error::class.java)
-            nextItem as Result.Error
-            assertThat(nextItem.exception).isInstanceOf(DecodingException::class.java)
             awaitComplete()
         }
     }

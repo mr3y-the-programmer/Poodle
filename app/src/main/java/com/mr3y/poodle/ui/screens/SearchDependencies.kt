@@ -55,7 +55,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mr3y.poodle.R
 import com.mr3y.poodle.domain.SearchUiState
-import com.mr3y.poodle.network.exceptions.PoodleException
 import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.presentation.SearchScreenViewModel
 import com.mr3y.poodle.repository.Artifact
@@ -222,7 +221,7 @@ fun TabContent(
             }
         }
         is Result.Error -> {
-            Error(exception = content.exception, modifier)
+            Error(modifier = modifier)
         }
     }
 }
@@ -351,11 +350,9 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
 }
 
 @Composable
-private fun Error(exception: PoodleException?, modifier: Modifier = Modifier) {
+private fun Error(modifier: Modifier = Modifier) {
     val message = buildString {
-        append("Unfortunately, an error occurred while trying to search for artifacts.")
-        append("\nCouldn't search for artifacts due to: ")
-        exception?.let { append("\n- ${it.message}") }
+        append("Oops!, things didn't go well while trying to satisfy your search request.")
     }
     ArtworkWithText(
         drawableResId = if (isSystemInDarkTheme()) R.drawable.error_dark else R.drawable.error_light,
