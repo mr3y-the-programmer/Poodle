@@ -24,7 +24,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Tab
@@ -68,11 +67,10 @@ import com.mr3y.poodle.ui.theme.PoodleTheme
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
     val homeState by viewModel.homeState.collectAsStateWithLifecycle(initialValue = SearchUiState.Initial)
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val query by remember { viewModel.searchQuery }
     val filters by remember {
         derivedStateOf {
@@ -96,18 +94,18 @@ fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
             )
         }
     }
-    SearchDependencies(homeState, bottomSheetState, query, { viewModel.updateSearchQuery(searchText = it) }, filters)
+    SearchDependencies(homeState, query, { viewModel.updateSearchQuery(searchText = it) }, filters)
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun SearchDependencies(
     state: SearchUiState,
-    bottomSheetState: ModalBottomSheetState,
     searchQuery: SearchQuery,
     onSearchQueryTextChanged: (String) -> Unit,
     filtersState: FiltersState
 ) {
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -376,15 +374,12 @@ private fun SearchUiState.getArtifactsBasedOnIndex(selectedTabIndex: Int): Resul
     }
 }
 
-@Preview
 @Composable
-@OptIn(ExperimentalMaterialApi::class)
+@Preview
 fun SearchDependenciesPreview() {
     PoodleTheme(false) {
-        val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         SearchDependencies(
             SearchUiState.Initial,
-            bottomSheetState,
             SearchQuery.EMPTY,
             {},
             FiltersState.Default

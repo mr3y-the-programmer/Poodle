@@ -23,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -88,7 +90,10 @@ internal fun TopAppBar(
         IconButton(
             modifier = Modifier
                 .weight(1f)
-                .semantics { },
+                .semantics {
+                    contentDescription = "Filter results"
+                    stateDescription = if (isFilteringEnabled) "Click to Display some filters to filter out irrelevant items" else "Filters are disabled, because your search query is empty"
+                },
             onClick = onFilterItemsClicked,
             enabled = isFilteringEnabled
         ) {
