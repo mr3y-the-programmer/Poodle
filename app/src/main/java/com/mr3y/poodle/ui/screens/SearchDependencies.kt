@@ -1,6 +1,11 @@
 package com.mr3y.poodle.ui.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +21,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -30,6 +36,7 @@ import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.rememberModalBottomSheetState
@@ -44,6 +51,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
@@ -247,106 +256,137 @@ private fun Empty(modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier = Modifier) {
     val page = remember(artifacts) { mutableStateOf(1..artifacts.size.coerceAtMost(20)) }
-    LazyColumn(
+    Box(
         modifier = modifier
     ) {
-        stickyHeader {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                Text(text = "Found ${artifacts.size} artifacts that matches your search")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+        val listState = rememberLazyListState()
+        val scope = rememberCoroutineScope()
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState
+        ) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 ) {
-                    Text(text = "Displaying artifacts: ${page.value.first} - ${page.value.last}")
+                    Text(text = "Found ${artifacts.size} artifacts that matches your search")
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        IconButton(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .semantics { },
-                            onClick = {
-                                page.value = if (artifacts.size == page.value.last) {
-                                    val subtracted = if (artifacts.size % 20 == 0) 20 else (artifacts.size % 20)
-                                    (page.value.first - 20)..(page.value.last - subtracted)
-                                } else
-                                    (page.value.first - 20)..(page.value.last - 20)
-                            },
-                            enabled = page.value.first > 1
+                        Text(text = "Displaying artifacts: ${page.value.first} - ${page.value.last}")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowLeft),
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                        IconButton(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .semantics { },
-                            onClick = {
-                                page.value = if ((artifacts.size - page.value.last) < 20)
-                                    (page.value.last + 1)..(artifacts.size)
-                                else
-                                    (page.value.first + 20)..(page.value.last + 20)
-                            },
-                            enabled = page.value.last < artifacts.size
-                        ) {
-                            Icon(
-                                painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowRight),
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp)
-                            )
+                            IconButton(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .semantics { },
+                                onClick = {
+                                    page.value = if (artifacts.size == page.value.last) {
+                                        val subtracted = if (artifacts.size % 20 == 0) 20 else (artifacts.size % 20)
+                                        (page.value.first - 20)..(page.value.last - subtracted)
+                                    } else
+                                        (page.value.first - 20)..(page.value.last - 20)
+                                },
+                                enabled = page.value.first > 1
+                            ) {
+                                Icon(
+                                    painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowLeft),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                            IconButton(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .semantics { },
+                                onClick = {
+                                    page.value = if ((artifacts.size - page.value.last) < 20)
+                                        (page.value.last + 1)..(artifacts.size)
+                                    else
+                                        (page.value.first + 20)..(page.value.last + 20)
+                                },
+                                enabled = page.value.last < artifacts.size
+                            ) {
+                                Icon(
+                                    painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowRight),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-        items(artifacts.slice((page.value.first - 1) until page.value.last)) { artifact ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                val gav = buildString {
-                    append(artifact.fullId)
-                    if (artifact.latestVersion != null) {
-                        append(":")
-                        append(artifact.latestVersion)
-                    }
-                }
-                Text(
-                    text = gav,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = if (artifact is Artifact.JitPackArtifact) Arrangement.End else Arrangement.SpaceBetween
+            items(artifacts.slice((page.value.first - 1) until page.value.last)) { artifact ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    val chipModifier = Modifier.wrapContentHeight()
-                    if (artifact is Artifact.MavenCentralArtifact) {
-                        TextChip(text = artifact.packaging, chipModifier.widthIn(min = 48.dp, max = 120.dp))
+                    val gav = buildString {
+                        append(artifact.fullId)
+                        if (artifact.latestVersion != null) {
+                            append(":")
+                            append(artifact.latestVersion)
+                        }
                     }
-                    TextChip(
-                        text = "${artifact.lastUpdated?.toLocalDate() ?: "N/A"}",
-                        modifier = if (artifact.lastUpdated != null) chipModifier.width(96.dp) else chipModifier.width(56.dp)
+                    Text(
+                        text = gav,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = if (artifact is Artifact.JitPackArtifact) Arrangement.End else Arrangement.SpaceBetween
+                    ) {
+                        val chipModifier = Modifier.wrapContentHeight()
+                        if (artifact is Artifact.MavenCentralArtifact) {
+                            TextChip(text = artifact.packaging, chipModifier.widthIn(min = 48.dp, max = 120.dp))
+                        }
+                        TextChip(
+                            text = "${artifact.lastUpdated?.toLocalDate() ?: "N/A"}",
+                            modifier = if (artifact.lastUpdated != null) chipModifier.width(96.dp) else chipModifier.width(56.dp)
+                        )
+                    }
+                    Divider()
                 }
-                Divider()
+            }
+        }
+        val isScrollToTopButtonVisible by remember { derivedStateOf { listState.firstVisibleItemIndex > 2 } }
+        AnimatedVisibility(
+            visible = isScrollToTopButtonVisible,
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.BottomEnd)
+                .size(48.dp),
+            enter = fadeIn() + slideInVertically { it },
+            exit = fadeOut() + slideOutVertically { it }
+        ) {
+            IconButton(
+                onClick = { scope.launch { listState.animateScrollToItem(0) } },
+                modifier = Modifier
+                    .shadow(16.dp, shape = CircleShape)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .fillMaxSize()
+            ) {
+                Icon(
+                    painter = rememberVectorPainter(image = Icons.Filled.ArrowUpward),
+                    contentDescription = "Scroll to the top",
+                    tint = MaterialTheme.colors.primary
+                )
             }
         }
     }
