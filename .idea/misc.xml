@@ -4,9 +4,11 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1645" />
-        <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/error_dark.xml" value="0.152" />
+        <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/error_dark.xml" value="0.2" />
         <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/error_light.xml" value="0.2" />
+        <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1715" />
         <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/initial_vector_dark.xml" value="0.1645" />
+        <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/initial_vector_light.xml" value="0.1715" />
         <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/no_results_dark.xml" value="0.1695" />
         <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/no_results_light.xml" value="0.1695" />
         <entry key="..\:/Users/pc/AndroidStudioProjects/Poodle/app/src/main/res/drawable/search_vector.xml" value="0.1645" />

@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -128,7 +129,11 @@ internal fun SearchDependencies(
             }
         ) { contentPadding ->
             if (state == SearchUiState.Initial) {
-                Initial(modifier = Modifier.padding(contentPadding).fillMaxSize())
+                Initial(
+                    modifier = Modifier
+                        .padding(contentPadding)
+                        .fillMaxSize()
+                )
             } else {
                 val selectedTabIndex = rememberSaveable(Unit) { mutableStateOf(0) }
                 val tabRowHeight = 56.dp
@@ -142,7 +147,6 @@ internal fun SearchDependencies(
                 )
                 TabContent(
                     state.getArtifactsBasedOnIndex(selectedTabIndex.value),
-                    searchQuery.text,
                     modifier = Modifier
                         .padding(contentPadding)
                         .padding(top = tabRowHeight)
@@ -194,7 +198,6 @@ fun TabRow(
 @Composable
 fun TabContent(
     content: Result<List<Artifact>>,
-    searchQueryText: String,
     modifier: Modifier = Modifier
 ) {
     when (content) {
@@ -211,10 +214,7 @@ fun TabContent(
         is Result.Success -> {
             val artifacts = content.data
             if (artifacts.isEmpty()) {
-                Empty(
-                    searchQueryText = searchQueryText,
-                    modifier = modifier
-                )
+                Empty(modifier = modifier)
             } else {
                 DisplaySearchResults(artifacts = artifacts, modifier = modifier)
             }
@@ -235,12 +235,16 @@ private fun Initial(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Empty(searchQueryText: String, modifier: Modifier = Modifier) {
-    ArtworkWithText(
-        drawableResId = if (isSystemInDarkTheme()) R.drawable.no_results_dark else R.drawable.no_results_light,
-        text = "Can't find anything that matches \"${searchQueryText}\". refine your search, and try again",
-        modifier = modifier
-    )
+private fun Empty(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "No results were found matching your search query criteria. refine your search, and try again",
+            textAlign = TextAlign.Center
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
