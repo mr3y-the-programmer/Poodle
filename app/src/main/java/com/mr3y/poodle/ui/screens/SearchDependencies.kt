@@ -78,6 +78,8 @@ import com.mr3y.poodle.ui.theme.PoodleTheme
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
+const val DefaultPageSize = 20
+
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
@@ -258,7 +260,7 @@ private fun Empty(modifier: Modifier = Modifier) {
 
 @Composable
 private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier = Modifier) {
-    val page = remember(artifacts) { mutableStateOf(1..artifacts.size.coerceAtMost(20)) }
+    val page = remember(artifacts) { mutableStateOf(1..artifacts.size.coerceAtMost(DefaultPageSize)) }
     Box(
         modifier = modifier
     ) {
@@ -281,48 +283,50 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Displaying artifacts: ${page.value.first} - ${page.value.last}")
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            IconButton(
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .clip(CircleShape)
-                                    .semantics { },
-                                onClick = {
-                                    page.value = if (artifacts.size == page.value.last) {
-                                        val subtracted = if (artifacts.size % 20 == 0) 20 else (artifacts.size % 20)
-                                        (page.value.first - 20)..(page.value.last - subtracted)
-                                    } else
-                                        (page.value.first - 20)..(page.value.last - 20)
-                                },
-                                enabled = page.value.first > 1
+                        if (artifacts.size > DefaultPageSize) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(
-                                    painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowLeft),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                            }
-                            IconButton(
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .clip(CircleShape)
-                                    .semantics { },
-                                onClick = {
-                                    page.value = if ((artifacts.size - page.value.last) < 20)
-                                        (page.value.last + 1)..(artifacts.size)
-                                    else
-                                        (page.value.first + 20)..(page.value.last + 20)
-                                },
-                                enabled = page.value.last < artifacts.size
-                            ) {
-                                Icon(
-                                    painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowRight),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(32.dp)
-                                )
+                                IconButton(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .semantics { },
+                                    onClick = {
+                                        page.value = if (artifacts.size == page.value.last) {
+                                            val subtracted = if (artifacts.size % DefaultPageSize == 0) DefaultPageSize else (artifacts.size % DefaultPageSize)
+                                            (page.value.first - DefaultPageSize)..(page.value.last - subtracted)
+                                        } else
+                                            (page.value.first - DefaultPageSize)..(page.value.last - DefaultPageSize)
+                                    },
+                                    enabled = page.value.first > 1
+                                ) {
+                                    Icon(
+                                        painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowLeft),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                                IconButton(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .semantics { },
+                                    onClick = {
+                                        page.value = if ((artifacts.size - page.value.last) < DefaultPageSize)
+                                            (page.value.last + 1)..(artifacts.size)
+                                        else
+                                            (page.value.first + DefaultPageSize)..(page.value.last + DefaultPageSize)
+                                    },
+                                    enabled = page.value.last < artifacts.size
+                                ) {
+                                    Icon(
+                                        painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowRight),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
                             }
                         }
                     }
