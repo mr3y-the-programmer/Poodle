@@ -31,9 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mr3y.poodle.network.datasources.FilteringPackaging
+import com.mr3y.poodle.ui.preview_utils.MultiThemePreview
+import com.mr3y.poodle.ui.theme.PoodleTheme
 
 internal data class FiltersState(
     val isMavenCentralEnabled: Boolean,
@@ -258,36 +259,44 @@ internal fun FilterTextField(
     )
 }
 
-@Preview(showBackground = true)
+@MultiThemePreview
 @Composable
 fun FilterHeaderPreview() {
-    FilterHeader(
-        Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-    )
+    PoodleTheme {
+        FilterHeader(
+            Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+        )
+    }
 }
 
-@Preview(showBackground = true)
+@MultiThemePreview
 @Composable
 fun FilterSwitchFieldPreview() {
-    FilterSwitchField(label = "Switch", enabled = true, onToggled = {})
+    PoodleTheme {
+        FilterSwitchField(label = "Switch", enabled = true, onToggled = {})
+    }
 }
 
-@Preview(showBackground = true)
+@MultiThemePreview
 @Composable
 fun FilterTextFieldPreview() {
-    FilterTextField(
-        initialValue = "Some user input", onValueChange = {}, label = "TextField",
-        Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-    )
+    PoodleTheme {
+        FilterTextField(
+            initialValue = "Some user input", onValueChange = {}, label = "TextField",
+            Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
+    }
 }
 
-@Preview(showBackground = true)
+@MultiThemePreview
 @Composable
 fun FiltersBottomSheetPreview() {
-    val previewState = FiltersState.Default.copy(groupIdValue = "com.google.*", packagingValue = "aar", limitValue = 15)
-    FiltersBottomSheet(state = previewState, modifier = Modifier.fillMaxSize())
+    PoodleTheme {
+        val previewState = FiltersState.Default.copy(groupIdValue = "com.google.*", packagingValue = "aar", limitValue = 15)
+        FiltersBottomSheet(state = previewState, modifier = Modifier.fillMaxSize())
+    }
 }
