@@ -1,6 +1,6 @@
 package com.mr3y.poodle.ui.components
 
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
@@ -11,7 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.mr3y.poodle.ui.preview_utils.MultiThemePreview
 import com.mr3y.poodle.ui.theme.PoodleTheme
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -35,10 +36,10 @@ internal fun TextChip(text: String, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@MultiThemePreview
 @Composable
 fun TextChipPreview() {
-    PoodleTheme(false) {
-        TextChip(text = "Example", Modifier.aspectRatio(4.5f))
+    PoodleTheme {
+        TextChip(text = "Example", Modifier.size(width = 88.dp, height = 48.dp))
     }
 }

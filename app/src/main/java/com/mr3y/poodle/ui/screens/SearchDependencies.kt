@@ -58,7 +58,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,9 +73,11 @@ import com.mr3y.poodle.ui.components.FiltersBottomSheet
 import com.mr3y.poodle.ui.components.FiltersState
 import com.mr3y.poodle.ui.components.TextChip
 import com.mr3y.poodle.ui.components.TopAppBar
+import com.mr3y.poodle.ui.preview_utils.MultiThemePreview
 import com.mr3y.poodle.ui.theme.PoodleTheme
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
 
 const val DefaultPageSize = 20
 
@@ -424,12 +425,79 @@ private fun SearchUiState.getArtifactsBasedOnIndex(selectedTabIndex: Int): Resul
 }
 
 @Composable
-@Preview
-fun SearchDependenciesPreview() {
-    PoodleTheme(false) {
+@MultiThemePreview
+fun SearchDependenciesInitialPreview() {
+    PoodleTheme {
         SearchDependencies(
             SearchUiState.Initial,
             SearchQuery.EMPTY,
+            {},
+            FiltersState.Default
+        )
+    }
+}
+
+@Composable
+@MultiThemePreview
+fun SearchDependenciesSuccessPreview() {
+    val mavenCentralArtifacts = Result.Success(
+        listOf(
+            Artifact.MavenCentralArtifact("com.juul.krayon:compose", "0.13.0-alpha4", "jar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("com.patrykmichalik.opto:compose", "1.0.16", "aar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("com.keyri:compose", "1.4.2", "aar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("io.github.kakaocup:compose", "0.1.0", "aar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("com.patrykandpatryk.vico:compose", "1.4.3", "aar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("com.freeletics.flowredux:compose", "1.0.0", "pom", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("net.meilcli.rippletext:compose", "0.0.1", "aar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("io.github.woody230.ktx:compose", "4.1.0", "jar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("com.tunjid.tiler:compose", "0.0.3", "jar", ZonedDateTime.now()),
+            Artifact.MavenCentralArtifact("com.qmuiteam:compose", "1.1.1", "aar", ZonedDateTime.now()),
+        )
+    )
+    val jitPackArtifacts = Result.Success(
+        listOf(
+            Artifact.JitPackArtifact("com.github.masayukisuda:mp4composer-android", "0.1.0", ZonedDateTime.now()),
+            Artifact.JitPackArtifact("com.github.jeziellago:compose-markdown", "2.1.0", null),
+            Artifact.JitPackArtifact("com.github.takuji31:navigation-compose-screen", null, ZonedDateTime.now()),
+            Artifact.JitPackArtifact("com.github.trevjonez:composer-gradle-plugin", "1.3.4", ZonedDateTime.now()),
+            Artifact.JitPackArtifact("com.github.ireward:compose-html", null, null),
+            Artifact.JitPackArtifact("com.github.sahabpardaz:docker-compose-wrapper", "1.1.2", ZonedDateTime.now()),
+            Artifact.JitPackArtifact("com.github.fornewid:material-motion-compose", "0.13.0-alpha4", null),
+            Artifact.JitPackArtifact("com.github.zsoltk:compose-router", "0.15.0-snapshot", ZonedDateTime.now()),
+            Artifact.JitPackArtifact("com.github.takahirom:groupie-compose-item", "2.13.0", ZonedDateTime.now()),
+            Artifact.JitPackArtifact("com.github.a914-gowtham:compose-ratingbar", "0.7.0", ZonedDateTime.now()),
+        )
+    )
+    PoodleTheme {
+        SearchDependencies(
+            SearchUiState(mavenCentralArtifacts, jitPackArtifacts),
+            SearchQuery.EMPTY.copy(text = "compose"),
+            {},
+            FiltersState.Default
+        )
+    }
+}
+
+@Composable
+@MultiThemePreview
+fun SearchDependenciesErrorPreview() {
+    PoodleTheme {
+        SearchDependencies(
+            SearchUiState(Result.Error(), Result.Error()),
+            SearchQuery.EMPTY.copy(text = "compose"),
+            {},
+            FiltersState.Default
+        )
+    }
+}
+
+@Composable
+@MultiThemePreview
+fun SearchDependenciesLoadingPreview() {
+    PoodleTheme {
+        SearchDependencies(
+            SearchUiState(Result.Loading, Result.Loading),
+            SearchQuery.EMPTY.copy(text = "compose"),
             {},
             FiltersState.Default
         )
