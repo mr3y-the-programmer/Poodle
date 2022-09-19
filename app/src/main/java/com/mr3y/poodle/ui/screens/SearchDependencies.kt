@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -68,11 +70,11 @@ import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.presentation.SearchScreenViewModel
 import com.mr3y.poodle.repository.Artifact
 import com.mr3y.poodle.repository.SearchQuery
+import com.mr3y.poodle.ui.components.AnimatedTopAppBar
 import com.mr3y.poodle.ui.components.ArtworkWithText
 import com.mr3y.poodle.ui.components.FiltersBottomSheet
 import com.mr3y.poodle.ui.components.FiltersState
 import com.mr3y.poodle.ui.components.TextChip
-import com.mr3y.poodle.ui.components.TopAppBar
 import com.mr3y.poodle.ui.preview_utils.MultiThemePreview
 import com.mr3y.poodle.ui.theme.PoodleTheme
 import io.github.aakira.napier.Napier
@@ -121,9 +123,16 @@ internal fun SearchDependencies(
 ) {
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+    val rootInteractionSource = remember { MutableInteractionSource() }
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                interactionSource = rootInteractionSource,
+                indication = null,
+                onClick = {}
+            ),
         sheetContent = {
             FiltersBottomSheet(filtersState)
         }
@@ -132,11 +141,12 @@ internal fun SearchDependencies(
         Scaffold(
             scaffoldState = scaffoldState,
             topBar = {
-                TopAppBar(
+                AnimatedTopAppBar(
                     searchQuery.text,
                     onSearchQueryTextChanged,
                     isFilteringEnabled = state != SearchUiState.Initial,
                     onFilterItemsClicked = { scope.launch { bottomSheetState.show() } },
+                    rootInteractionSource = rootInteractionSource
                 )
             }
         ) { contentPadding ->
