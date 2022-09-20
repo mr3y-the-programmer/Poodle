@@ -78,7 +78,7 @@ internal fun AnimatedTopAppBar(
     ) {
         val fraction by animateFloatAsState(
             targetValue = if (isFocused) 1f else 0.85f,
-            animationSpec = tween(600)
+            animationSpec = tween(500)
         )
         SearchBar(
             initialSearchQuery = initialSearchQuery,
