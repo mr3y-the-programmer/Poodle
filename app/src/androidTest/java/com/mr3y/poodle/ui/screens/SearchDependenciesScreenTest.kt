@@ -3,7 +3,6 @@ package com.mr3y.poodle.ui.screens
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -49,7 +48,7 @@ class SearchDependenciesScreenTest {
             assertIsNotEnabled()
         }
         composeTestRule.onNodeWithText("Search by name, groupId, or tag.").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Filters").assertIsNotDisplayed()
+        composeTestRule.onNodeWithText("Filters", useUnmergedTree = true).assertIsNotDisplayed()
     }
 
     @Test
@@ -67,12 +66,12 @@ class SearchDependenciesScreenTest {
         }
 
         composeTestRule.onNode(hasText("MavenCentral") and hasRole(Role.Tab)).assertIsDisplayed()
-        composeTestRule.onNodeWithTag("LoadingIndicator").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("LoadingIndicator", useUnmergedTree = true).assertIsDisplayed()
         composeTestRule.onNodeWithContentDescription("Filter results").apply {
             assertIsDisplayed()
             assertIsEnabled()
         }
-        composeTestRule.onNodeWithText("Filters").assertIsNotDisplayed()
+        composeTestRule.onNodeWithText("Filters", useUnmergedTree = true).assertIsNotDisplayed()
         composeTestRule.onNodeWithContentDescription("Filter results").performClick()
         composeTestRule.onNodeWithText("Filters").assertIsDisplayed()
     }
