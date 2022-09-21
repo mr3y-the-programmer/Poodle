@@ -10,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.mr3y.poodle.domain.SearchForArtifactsUseCase
 import com.mr3y.poodle.domain.SearchUiState
 import com.mr3y.poodle.repository.SearchQuery
+import com.mr3y.poodle.repository.SearchResult
+import com.mr3y.poodle.repository.Source
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -51,11 +53,9 @@ class SearchScreenViewModel @Inject constructor(
             enableSearchingOnMaven,
             enableSearchingOnJitPack
         ).map { searchResult ->
-            if (searchResult == null)
-                return@map SearchUiState.Initial
-
             Snapshot.withMutableSnapshot {
-                internalState = internalState.reduce(
+                internalState = reduce(
+                    internalState,
                     searchResult,
                     enableSearchingOnMaven,
                     enableSearchingOnJitPack
@@ -105,5 +105,30 @@ class SearchScreenViewModel @Inject constructor(
                 containsClassFullyQualifiedName = containsClassFQN ?: searchQuery.value.containsClassFullyQualifiedName
             )
         }
+    }
+
+    internal fun reduce(
+        previousState: SearchUiState,
+        searchResult: SearchResult?,
+        isSearchingOnMavenEnabled: Boolean = true,
+        isSearchingOnJitPackEnabled: Boolean = true
+    ): SearchUiState {
+        if (searchResult == null) return SearchUiState.Initial
+
+        val (artifacts, source) = searchResult
+        val mavenCentralArtifacts = when {
+            isSearchingOnMavenEnabled && source == Source.MavenCentral -> artifacts
+            isSearchingOnMavenEnabled -> previousState.mavenCentralArtifacts
+            else -> null
+        }
+        val jitPackArtifacts = when {
+            isSearchingOnJitPackEnabled && source == Source.JitPack -> artifacts
+            isSearchingOnJitPackEnabled -> previousState.jitPackArtifacts
+            else -> null
+        }
+        return SearchUiState(
+            mavenCentralArtifacts = mavenCentralArtifacts,
+            jitPackArtifacts = jitPackArtifacts
+        )
     }
 }
