@@ -10,5 +10,5 @@ interface SearchForArtifactsRepository {
         searchQuery: SearchQuery,
         searchOnMaven: Boolean = true,
         searchOnJitPack: Boolean = true,
-    ): Flow<SearchResult>
+    ): Flow<SearchResult?>
 }
