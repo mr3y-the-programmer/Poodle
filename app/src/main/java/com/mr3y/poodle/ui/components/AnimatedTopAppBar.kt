@@ -9,22 +9,22 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.FilterAltOff
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -92,7 +92,7 @@ internal fun AnimatedTopAppBar(
                 }
         )
         if (!isFocused) {
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.fillMaxWidth(0.15f))
             IconButton(
                 modifier = Modifier
                     .semantics {
@@ -104,9 +104,12 @@ internal fun AnimatedTopAppBar(
                 enabled = isFilteringEnabled
             ) {
                 Icon(
-                    painter = rememberVectorPainter(image = Icons.Filled.FilterAlt),
+                    painter = rememberVectorPainter(
+                        image = if (isFilteringEnabled) Icons.Filled.FilterAlt else Icons.Filled.FilterAltOff
+                    ),
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp),
+                    tint = if (isFilteringEnabled) MaterialTheme.colors.primary else Color.DarkGray.copy(alpha = 0.5f)
                 )
             }
         }
@@ -165,16 +168,27 @@ private fun SearchBar(
 
 @MultiThemePreview
 @Composable
-fun TopAppBarPreview() {
+fun TopAppBarFilteringEnabledPreview() {
     PoodleTheme {
         AnimatedTopAppBar(
             initialSearchQuery = "compose",
             onSearchQueryValueChanged = {},
             isFilteringEnabled = true,
             onFilterItemsClicked = { },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
+            rootInteractionSource = remember { MutableInteractionSource() }
+        )
+    }
+}
+
+@MultiThemePreview
+@Composable
+fun TopAppBarFilteringDisabledPreview() {
+    PoodleTheme {
+        AnimatedTopAppBar(
+            initialSearchQuery = "compose",
+            onSearchQueryValueChanged = {},
+            isFilteringEnabled = false,
+            onFilterItemsClicked = { },
             rootInteractionSource = remember { MutableInteractionSource() }
         )
     }
