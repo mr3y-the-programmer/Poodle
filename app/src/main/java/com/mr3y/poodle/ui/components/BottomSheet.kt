@@ -16,6 +16,7 @@ import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -47,8 +49,8 @@ internal data class FiltersState(
     val onPackagingValueChanged: (String) -> Unit,
     val tagsValue: Set<String>,
     val onTagsValueChanged: (Set<String>) -> Unit,
-    val limitValue: Int?,
-    val onLimitValueChanged: (Int?) -> Unit,
+    val limitValue: Int,
+    val onLimitValueChanged: (Int) -> Unit,
     val classSimpleNameValue: String,
     val onClassSimpleNameValueChanged: (String) -> Unit,
     val classFQNValue: String,
@@ -66,7 +68,7 @@ internal data class FiltersState(
             {},
             emptySet(),
             {},
-            null,
+            0,
             {},
             "",
             {},
@@ -103,7 +105,7 @@ internal fun FiltersBottomSheet(
                 ) {
                     FilterSwitchField(
                         label = if (index == 0) "MavenCentral" else "Jitpack",
-                        enabled = if (index == 0) state.isMavenCentralEnabled else state.isJitpackEnabled,
+                        checked = if (index == 0) state.isMavenCentralEnabled else state.isJitpackEnabled,
                         onToggled = if (index == 0) state.onMavenCentralSwitchToggled else state.onJitpackSwitchToggled
                     )
                 }
@@ -121,8 +123,8 @@ internal fun FiltersBottomSheet(
                 modifier = Modifier.weight(1f)
             )
             FilterTextField(
-                initialValue = state.limitValue?.toString() ?: "",
-                onValueChange = { state.onLimitValueChanged(it.toIntOrNull()) },
+                initialValue = state.limitValue.takeIf { it != 0 }?.toString() ?: "",
+                onValueChange = { state.onLimitValueChanged(if (it.isBlank() || it.isEmpty()) 0 else it.toInt()) },
                 label = "Limit:",
                 modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -131,6 +133,7 @@ internal fun FiltersBottomSheet(
         Row(
             modifier = childModifier,
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(text = "Packaging *: ")
             val packages = remember { FilteringPackaging }
@@ -146,7 +149,12 @@ internal fun FiltersBottomSheet(
                         state.onPackagingValueChanged(newValue)
                     },
                     border = ChipDefaults.outlinedBorder,
-                    colors = ChipDefaults.outlinedFilterChipColors(),
+                    colors = ChipDefaults.outlinedFilterChipColors(
+                        backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.12f)
+                            .compositeOver(MaterialTheme.colors.surface),
+                        contentColor = MaterialTheme.colors.primary,
+                        selectedLeadingIconColor = MaterialTheme.colors.onSurface
+                    ),
                     selectedIcon = {
                         Icon(
                             imageVector = Icons.Filled.Done,
@@ -164,7 +172,7 @@ internal fun FiltersBottomSheet(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(text = "Advanced *")
+            Text(text = "Advanced *:")
             FilterTextField(
                 initialValue = state.classSimpleNameValue,
                 onValueChange = state.onClassSimpleNameValueChanged,
@@ -190,11 +198,11 @@ internal fun FilterHeader(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 8.dp),
+            .padding(start = 16.dp, end = 8.dp, top = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = "Filters")
+        Text(text = "Filters", style = MaterialTheme.typography.h2)
         Icon(
             painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowUp),
             contentDescription = null,
@@ -206,15 +214,15 @@ internal fun FilterHeader(modifier: Modifier = Modifier) {
 @Composable
 internal fun FilterSwitchField(
     label: String,
-    enabled: Boolean,
+    checked: Boolean,
     onToggled: (Boolean) -> Unit,
 ) {
     Text(
         text = label,
     )
     Switch(
-        checked = enabled,
-        onCheckedChange = onToggled,
+        checked = checked,
+        onCheckedChange = onToggled
     )
 }
 
@@ -275,7 +283,7 @@ fun FilterHeaderPreview() {
 @Composable
 fun FilterSwitchFieldPreview() {
     PoodleTheme {
-        FilterSwitchField(label = "Switch", enabled = true, onToggled = {})
+        FilterSwitchField(label = "Switch", checked = true, onToggled = {})
     }
 }
 
