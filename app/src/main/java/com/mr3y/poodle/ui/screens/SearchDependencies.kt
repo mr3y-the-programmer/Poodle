@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -54,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
@@ -284,12 +282,15 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
             item {
                 Column(
                     modifier = Modifier
+                        .background(MaterialTheme.colors.primaryVariant.copy(alpha = 0.35f))
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(top = 8.dp, start = 8.dp, end = 8.dp)
                 ) {
                     Text(text = "Found ${artifacts.size} artifacts that matches your search")
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -341,6 +342,7 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                             }
                         }
                     }
+                    Divider()
                 }
             }
             items(artifacts.slice((page.value.first - 1) until page.value.last)) { artifact ->
@@ -366,26 +368,22 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = if (artifact is Artifact.JitPackArtifact) Arrangement.End else Arrangement.SpaceBetween
                     ) {
-                        val chipModifier = Modifier.wrapContentHeight()
                         if (artifact is Artifact.MavenCentralArtifact) {
-                            TextChip(text = artifact.packaging, chipModifier.widthIn(min = 48.dp, max = 120.dp))
+                            TextChip(text = artifact.packaging, Modifier.wrapContentHeight().widthIn(min = 48.dp, max = 120.dp))
                         }
-                        TextChip(
-                            text = "${artifact.lastUpdated?.toLocalDate() ?: "N/A"}",
-                            modifier = if (artifact.lastUpdated != null) chipModifier.width(96.dp) else chipModifier.width(56.dp)
-                        )
+                        TextChip(text = "Updated: ${artifact.lastUpdated?.toLocalDate() ?: "N/A"}")
                     }
                     Divider()
                 }
             }
         }
-        val isScrollToTopButtonVisible by remember { derivedStateOf { listState.firstVisibleItemIndex > 2 } }
+        val isScrollToTopButtonVisible by remember { derivedStateOf { listState.firstVisibleItemIndex > 1 } }
         AnimatedVisibility(
             visible = isScrollToTopButtonVisible,
             modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.BottomEnd)
-                .size(48.dp),
+                .size(56.dp),
             enter = fadeIn() + slideInVertically { it },
             exit = fadeOut() + slideOutVertically { it }
         ) {
@@ -394,13 +392,13 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                 modifier = Modifier
                     .shadow(16.dp, shape = CircleShape)
                     .clip(CircleShape)
-                    .background(Color.White)
+                    .background(MaterialTheme.colors.secondary)
                     .fillMaxSize()
             ) {
                 Icon(
                     painter = rememberVectorPainter(image = Icons.Filled.ArrowUpward),
                     contentDescription = "Scroll to the top",
-                    tint = MaterialTheme.colors.primary
+                    tint = MaterialTheme.colors.onSecondary
                 )
             }
         }
