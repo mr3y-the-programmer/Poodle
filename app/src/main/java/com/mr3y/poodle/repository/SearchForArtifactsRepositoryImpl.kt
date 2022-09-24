@@ -54,7 +54,7 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
             mavenCentralDataSource.getArtifacts {
                 text = searchQuery.text
                 groupId = searchQuery.groupId
-                limit = searchQuery.limit ?: limit
+                limit = searchQuery.limit
                 packaging = searchQuery.packaging
                 tags = searchQuery.tags
                 containsClassSimpleName = searchQuery.containsClassSimpleName
@@ -72,7 +72,7 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
             jitPackDataSource.getArtifacts {
                 text = searchQuery.text
                 groupId = searchQuery.groupId
-                limit = searchQuery.limit ?: limit
+                limit = searchQuery.limit
             }.map {
                 val data = when (it) {
                     is Result.Success -> { Result.Success(it.data.toArtifacts()) }

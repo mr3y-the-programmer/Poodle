@@ -11,11 +11,16 @@ sealed interface EndPointQueryParameters {
     fun clearQueryParameters()
 }
 
+private const val DefaultMavenCentralLimit = 200
+
 object MavenCentralQueryParameters : EndPointQueryParameters {
 
     override var groupId = ""
 
-    override var limit = 200
+    override var limit = DefaultMavenCentralLimit
+        set(value) {
+            field = if (value <= 0) DefaultMavenCentralLimit else value
+        }
 
     override var text = ""
 
@@ -30,7 +35,7 @@ object MavenCentralQueryParameters : EndPointQueryParameters {
     override fun clearQueryParameters() {
         text = ""
         groupId = ""
-        limit = 200
+        limit = DefaultMavenCentralLimit
         packaging = ""
         tags = emptySet()
         containsClassSimpleName = ""
@@ -38,17 +43,22 @@ object MavenCentralQueryParameters : EndPointQueryParameters {
     }
 }
 
+private const val DefaultJitPackLimit = 50
+
 object JitPackQueryParameters : EndPointQueryParameters {
 
     override var groupId = ""
 
     override var text = ""
 
-    override var limit = 50
+    override var limit = DefaultJitPackLimit
+        set(value) {
+            field = if (value <= 0) DefaultJitPackLimit else value
+        }
 
     override fun clearQueryParameters() {
         groupId = ""
         text = ""
-        limit = 50
+        limit = DefaultJitPackLimit
     }
 }

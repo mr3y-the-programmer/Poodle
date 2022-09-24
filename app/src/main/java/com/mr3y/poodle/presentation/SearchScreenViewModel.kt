@@ -92,13 +92,11 @@ class SearchScreenViewModel @Inject constructor(
         containsClassSimpleName: String? = null,
         containsClassFQN: String? = null
     ) {
-        val isAllNull = searchText == null && groupId == null && limit == null &&
-            packaging == null && tags == null && containsClassSimpleName == null && containsClassFQN == null
         Snapshot.withMutableSnapshot {
             searchQuery.value = searchQuery.value.copy(
                 text = searchText ?: searchQuery.value.text,
                 groupId = groupId ?: searchQuery.value.groupId,
-                limit = if (limit != null || isAllNull) limit else searchQuery.value.limit,
+                limit = limit ?: searchQuery.value.limit,
                 packaging = packaging ?: searchQuery.value.packaging,
                 tags = tags ?: searchQuery.value.tags,
                 containsClassSimpleName = containsClassSimpleName ?: searchQuery.value.containsClassSimpleName,

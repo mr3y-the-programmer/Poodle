@@ -23,13 +23,13 @@ class SearchForArtifactsRepositoryImplTest {
 
     @Test
     fun `given both data sources are disabled, or search query isn't sufficient, then verify it returns null`() = runTest {
-        var searchQuery = SearchQuery("compos", "", null, "", emptySet(), "", "")
+        var searchQuery = SearchQuery("compos", "", 0, "", emptySet(), "", "")
 
         sut.searchByQuery(searchQuery, searchOnMaven = false, searchOnJitPack = false).test {
             assertThat(awaitItem()).isNull()
             awaitComplete()
         }
-        searchQuery = SearchQuery("c", "", null, "", emptySet(), "", "")
+        searchQuery = SearchQuery("c", "", 0, "", emptySet(), "", "")
         sut.searchByQuery(searchQuery, searchOnMaven = true, searchOnJitPack = true).test {
             assertThat(awaitItem()).isNull()
             awaitComplete()
@@ -61,7 +61,7 @@ class SearchForArtifactsRepositoryImplTest {
 
     @Test
     fun `given a cached search query after a successful data loading, then verify we get a cached result`() = runTest {
-        val searchQuery = SearchQuery("compos", "", null, "", emptySet(), "", "")
+        val searchQuery = SearchQuery("compos", "", 0, "", emptySet(), "", "")
         val isSearchOnMavenCentralEnabled = true
         val isSearchOnJitpackEnabled = true
 
