@@ -13,12 +13,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -125,6 +132,11 @@ internal fun SearchDependencies(
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         modifier = Modifier
+            .padding(
+                WindowInsets.safeDrawing
+                    .only(WindowInsetsSides.Horizontal)
+                    .asPaddingValues()
+            )
             .fillMaxSize()
             .clickable(
                 interactionSource = rootInteractionSource,
@@ -138,6 +150,7 @@ internal fun SearchDependencies(
         val scaffoldState = rememberScaffoldState()
         Scaffold(
             scaffoldState = scaffoldState,
+            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical)),
             topBar = {
                 AnimatedTopAppBar(
                     searchQuery.text,
@@ -271,13 +284,13 @@ private fun Empty(modifier: Modifier = Modifier) {
 private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier = Modifier) {
     val page = remember(artifacts) { mutableStateOf(1..artifacts.size.coerceAtMost(DefaultPageSize)) }
     Box(
-        modifier = modifier
+        modifier = modifier.imePadding()
     ) {
         val listState = rememberLazyListState()
         val scope = rememberCoroutineScope()
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            state = listState
+            state = listState,
         ) {
             item {
                 Column(
@@ -369,7 +382,12 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                         horizontalArrangement = if (artifact is Artifact.JitPackArtifact) Arrangement.End else Arrangement.SpaceBetween
                     ) {
                         if (artifact is Artifact.MavenCentralArtifact) {
-                            TextChip(text = artifact.packaging, Modifier.wrapContentHeight().widthIn(min = 48.dp, max = 120.dp))
+                            TextChip(
+                                text = artifact.packaging,
+                                Modifier
+                                    .wrapContentHeight()
+                                    .widthIn(min = 48.dp, max = 120.dp)
+                            )
                         }
                         TextChip(text = "Updated: ${artifact.lastUpdated?.toLocalDate() ?: "N/A"}")
                     }

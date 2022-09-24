@@ -6,7 +6,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColors(
     primary = Blue200,
@@ -40,6 +42,15 @@ fun PoodleTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable
         LightColorPalette
     }
 
+    // to easily support transparent navigation bar on API 26 without needing to manually handle that in multiple places.
+    val systemUiController = rememberSystemUiController()
+    DisposableEffect(key1 = systemUiController, key2 = darkTheme) {
+        systemUiController.setNavigationBarColor(
+            color = Color.Transparent,
+            darkIcons = !darkTheme
+        )
+        onDispose { }
+    }
     MaterialTheme(
         colors = colors,
         typography = Typography,
