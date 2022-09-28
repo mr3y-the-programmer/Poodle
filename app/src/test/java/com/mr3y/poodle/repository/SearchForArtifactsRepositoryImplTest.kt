@@ -5,8 +5,10 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.google.testing.junit.testparameterinjector.TestParameters
-import com.mr3y.poodle.network.datasources.FakeJitPackImpl
-import com.mr3y.poodle.network.datasources.FakeMavenCentralImpl
+import com.mr3y.poodle.network.fakeMavenCentralDeserializedResponse
+import com.mr3y.poodle.network.filteredFakeJitPackDeSerializedResponse
+import com.mr3y.poodle.network.fixtures.FakeJitPackImpl
+import com.mr3y.poodle.network.fixtures.FakeMavenCentralImpl
 import com.mr3y.poodle.network.models.Result
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -44,6 +46,8 @@ class SearchForArtifactsRepositoryImplTest {
         isSearchOnMavenEnabled: Boolean,
         isSearchOnJitPackEnabled: Boolean
     ) = runTest {
+        fakeMavenCentralInstance.response = Result.Success(fakeMavenCentralDeserializedResponse)
+        fakeJitPackInstance.response = Result.Success(filteredFakeJitPackDeSerializedResponse)
         sut.searchByQuery(fakeSearchQuery, isSearchOnMavenEnabled, isSearchOnJitPackEnabled).test {
             if (isSearchOnMavenEnabled) {
                 awaitArtifactsFromSource(Source.MavenCentral) { artifacts ->
@@ -65,6 +69,8 @@ class SearchForArtifactsRepositoryImplTest {
         val isSearchOnMavenCentralEnabled = true
         val isSearchOnJitpackEnabled = true
 
+        fakeMavenCentralInstance.response = Result.Success(fakeMavenCentralDeserializedResponse)
+        fakeJitPackInstance.response = Result.Success(filteredFakeJitPackDeSerializedResponse)
         // simulate searching for the first time to cache the result
         launch {
             sut.searchByQuery(
@@ -113,11 +119,13 @@ class SearchForArtifactsRepositoryImplTest {
     companion object {
 
         private lateinit var sut: SearchForArtifactsRepositoryImpl
+        private val fakeMavenCentralInstance = FakeMavenCentralImpl()
+        private val fakeJitPackInstance = FakeJitPackImpl()
 
         @BeforeClass
         @JvmStatic
         fun setup() {
-            sut = SearchForArtifactsRepositoryImpl(FakeMavenCentralImpl(), FakeJitPackImpl())
+            sut = SearchForArtifactsRepositoryImpl(fakeMavenCentralInstance, fakeJitPackInstance)
         }
     }
 }

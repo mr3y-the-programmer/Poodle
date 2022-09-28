@@ -6,9 +6,9 @@ import com.mr3y.poodle.domain.SearchUiState
 import com.mr3y.poodle.domain.fakeSearchResults
 import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.repository.Artifact
-import com.mr3y.poodle.repository.FakeSearchForArtifactsRepository
 import com.mr3y.poodle.repository.SearchResult
 import com.mr3y.poodle.repository.Source
+import com.mr3y.poodle.repository.fixtures.FakeSearchForArtifactsRepository
 import com.mr3y.poodle.utils.TestDispatcherRule
 import org.junit.BeforeClass
 import org.junit.Rule
