@@ -1,5 +1,8 @@
-package com.mr3y.poodle.repository
+package com.mr3y.poodle.repository.fixtures
 
+import com.mr3y.poodle.repository.SearchForArtifactsRepository
+import com.mr3y.poodle.repository.SearchQuery
+import com.mr3y.poodle.repository.SearchResult
 import kotlinx.coroutines.flow.Flow
 
 class FakeSearchForArtifactsRepository(private val seed: Flow<SearchResult>) : SearchForArtifactsRepository {
