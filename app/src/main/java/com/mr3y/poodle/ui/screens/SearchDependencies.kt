@@ -290,23 +290,23 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
             modifier = Modifier.fillMaxSize(),
             state = listState,
         ) {
-            item {
-                Column(
-                    modifier = Modifier
-                        .background(MaterialTheme.colors.primaryVariant.copy(alpha = 0.35f))
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, start = 8.dp, end = 8.dp)
-                ) {
-                    Text(text = "Found ${pagesState.totalNumOfAllMatchedArtifacts} artifacts that matches your search")
-                    Row(
+            if (pagesState.totalNumOfAllMatchedArtifacts > pagesState.numOfArtifactsPerPage) {
+                item {
+                    Column(
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .background(MaterialTheme.colors.primaryVariant.copy(alpha = 0.35f))
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, start = 8.dp, end = 8.dp)
                     ) {
-                        Text(text = "Displaying artifacts: ${pagesState.currentPage.first} - ${pagesState.currentPage.last}")
-                        if (pagesState.totalNumOfAllMatchedArtifacts > pagesState.numOfArtifactsPerPage) {
+                        Text(text = "Found ${pagesState.totalNumOfAllMatchedArtifacts} artifacts that matches your search")
+                        Row(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Displaying artifacts: ${pagesState.currentPage.first} - ${pagesState.currentPage.last}")
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
