@@ -52,6 +52,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -281,130 +282,132 @@ private fun Empty(modifier: Modifier = Modifier) {
 @Composable
 private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier = Modifier) {
     val pagesState = rememberSearchResultsListState(artifacts = artifacts)
-    Box(
-        modifier = modifier.imePadding()
-    ) {
-        val listState = rememberLazyListState()
-        val scope = rememberCoroutineScope()
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = listState,
+    key(artifacts) {
+        Box(
+            modifier = modifier.imePadding()
         ) {
-            if (pagesState.totalNumOfAllMatchedArtifacts > pagesState.numOfArtifactsPerPage) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.primaryVariant.copy(alpha = 0.35f))
-                            .fillMaxWidth()
-                            .padding(top = 8.dp, start = 8.dp, end = 8.dp)
-                    ) {
-                        Text(text = "Found ${pagesState.totalNumOfAllMatchedArtifacts} artifacts that matches your search")
-                        Row(
+            val listState = rememberLazyListState()
+            val scope = rememberCoroutineScope()
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+            ) {
+                if (pagesState.totalNumOfAllMatchedArtifacts > pagesState.numOfArtifactsPerPage) {
+                    item {
+                        Column(
                             modifier = Modifier
-                                .padding(vertical = 8.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .background(MaterialTheme.colors.primaryVariant.copy(alpha = 0.35f))
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, start = 8.dp, end = 8.dp)
                         ) {
-                            Text(text = "Displaying artifacts: ${pagesState.currentPage.first} - ${pagesState.currentPage.last}")
+                            Text(text = "Found ${pagesState.totalNumOfAllMatchedArtifacts} artifacts that matches your search")
                             Row(
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                IconButton(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .clip(CircleShape)
-                                        .semantics { },
-                                    onClick = pagesState::backToThePreviousPage,
-                                    enabled = !pagesState.isFirstPage
+                                Text(text = "Displaying artifacts: ${pagesState.currentPage.first} - ${pagesState.currentPage.last}")
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Icon(
-                                        painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowLeft),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(32.dp)
-                                    )
-                                }
-                                IconButton(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .clip(CircleShape)
-                                        .semantics { },
-                                    onClick = pagesState::goToNextPage,
-                                    enabled = !pagesState.isLastPage
-                                ) {
-                                    Icon(
-                                        painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowRight),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(32.dp)
-                                    )
+                                    IconButton(
+                                        modifier = Modifier
+                                            .size(64.dp)
+                                            .clip(CircleShape)
+                                            .semantics { },
+                                        onClick = pagesState::backToThePreviousPage,
+                                        enabled = !pagesState.isFirstPage
+                                    ) {
+                                        Icon(
+                                            painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowLeft),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(32.dp)
+                                        )
+                                    }
+                                    IconButton(
+                                        modifier = Modifier
+                                            .size(64.dp)
+                                            .clip(CircleShape)
+                                            .semantics { },
+                                        onClick = pagesState::goToNextPage,
+                                        enabled = !pagesState.isLastPage
+                                    ) {
+                                        Icon(
+                                            painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowRight),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(32.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
+                        Divider()
                     }
-                    Divider()
                 }
-            }
-            items(pagesState.currentPageArtifacts) { artifact ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    val gav = buildString {
-                        append(artifact.fullId)
-                        if (artifact.latestVersion != null) {
-                            append(":")
-                            append(artifact.latestVersion)
-                        }
-                    }
-                    Text(
-                        text = gav,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = if (artifact is Artifact.JitPackArtifact) Arrangement.End else Arrangement.SpaceBetween
+                items(pagesState.getCurrentPageArtifactsOf(artifacts)) { artifact ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        if (artifact is Artifact.MavenCentralArtifact) {
-                            TextChip(
-                                text = artifact.packaging,
-                                Modifier
-                                    .wrapContentHeight()
-                                    .widthIn(min = 48.dp, max = 120.dp)
-                            )
+                        val gav = buildString {
+                            append(artifact.fullId)
+                            if (artifact.latestVersion != null) {
+                                append(":")
+                                append(artifact.latestVersion)
+                            }
                         }
-                        TextChip(text = "Updated: ${artifact.lastUpdated?.toLocalDate() ?: "N/A"}")
+                        Text(
+                            text = gav,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = if (artifact is Artifact.JitPackArtifact) Arrangement.End else Arrangement.SpaceBetween
+                        ) {
+                            if (artifact is Artifact.MavenCentralArtifact) {
+                                TextChip(
+                                    text = artifact.packaging,
+                                    Modifier
+                                        .wrapContentHeight()
+                                        .widthIn(min = 48.dp, max = 120.dp)
+                                )
+                            }
+                            TextChip(text = "Updated: ${artifact.lastUpdated?.toLocalDate() ?: "N/A"}")
+                        }
+                        Divider()
                     }
-                    Divider()
                 }
             }
-        }
-        val isScrollToTopButtonVisible by remember { derivedStateOf { listState.firstVisibleItemIndex > 1 } }
-        AnimatedVisibility(
-            visible = isScrollToTopButtonVisible,
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.BottomEnd)
-                .size(56.dp),
-            enter = fadeIn() + slideInVertically { it },
-            exit = fadeOut() + slideOutVertically { it }
-        ) {
-            IconButton(
-                onClick = { scope.launch { listState.animateScrollToItem(0) } },
+            val isScrollToTopButtonVisible by remember { derivedStateOf { listState.firstVisibleItemIndex > 1 } }
+            AnimatedVisibility(
+                visible = isScrollToTopButtonVisible,
                 modifier = Modifier
-                    .shadow(16.dp, shape = CircleShape)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colors.secondary)
-                    .fillMaxSize()
+                    .padding(16.dp)
+                    .align(Alignment.BottomEnd)
+                    .size(56.dp),
+                enter = fadeIn() + slideInVertically { it },
+                exit = fadeOut() + slideOutVertically { it }
             ) {
-                Icon(
-                    painter = rememberVectorPainter(image = Icons.Filled.ArrowUpward),
-                    contentDescription = "Scroll to the top",
-                    tint = MaterialTheme.colors.onSecondary
-                )
+                IconButton(
+                    onClick = { scope.launch { listState.animateScrollToItem(0) } },
+                    modifier = Modifier
+                        .shadow(16.dp, shape = CircleShape)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colors.secondary)
+                        .fillMaxSize()
+                ) {
+                    Icon(
+                        painter = rememberVectorPainter(image = Icons.Filled.ArrowUpward),
+                        contentDescription = "Scroll to the top",
+                        tint = MaterialTheme.colors.onSecondary
+                    )
+                }
             }
         }
     }

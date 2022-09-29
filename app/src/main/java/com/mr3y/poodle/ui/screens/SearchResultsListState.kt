@@ -4,7 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.mr3y.poodle.repository.Artifact
 
@@ -16,18 +17,17 @@ fun rememberSearchResultsListState(
     totalNumOfAllMatchedArtifacts: Int = artifacts.size,
     numOfArtifactsPerPage: Int = DefaultPageSize
 ): SearchResultsListState {
-    return remember(artifacts) { SearchResultsListState(artifacts, totalNumOfAllMatchedArtifacts, numOfArtifactsPerPage) }
+    return rememberSaveable(artifacts, saver = SearchResultsListState.Saver()) {
+        SearchResultsListState(totalNumOfAllMatchedArtifacts, numOfArtifactsPerPage)
+    }
 }
 
 class SearchResultsListState(
-    private val artifacts: List<Artifact>,
     val totalNumOfAllMatchedArtifacts: Int,
     val numOfArtifactsPerPage: Int
 ) {
     var currentPage by mutableStateOf(1..totalNumOfAllMatchedArtifacts.coerceAtMost(numOfArtifactsPerPage))
         private set
-
-    val currentPageArtifacts by derivedStateOf { artifacts.slice((currentPage.first - 1) until currentPage.last) }
 
     val isFirstPage by derivedStateOf { currentPage.first == 1 }
 
@@ -46,5 +46,21 @@ class SearchResultsListState(
             (currentPage.first - numOfArtifactsPerPage)..(currentPage.last - subtracted)
         } else
             (currentPage.first - numOfArtifactsPerPage)..(currentPage.last - numOfArtifactsPerPage)
+    }
+
+    fun getCurrentPageArtifactsOf(allArtifacts: List<Artifact>) = allArtifacts.slice((currentPage.first - 1) until currentPage.last)
+
+    companion object {
+
+        fun Saver() = Saver<SearchResultsListState, IntArray>(
+            save = { state ->
+                intArrayOf(state.totalNumOfAllMatchedArtifacts, state.numOfArtifactsPerPage, state.currentPage.first, state.currentPage.last)
+            },
+            restore = {
+                val restored = SearchResultsListState(it[0], it[1])
+                restored.currentPage = it[2]..it[3]
+                restored
+            }
+        )
     }
 }

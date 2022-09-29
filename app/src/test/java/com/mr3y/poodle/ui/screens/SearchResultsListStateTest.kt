@@ -18,10 +18,10 @@ class SearchResultsListStateTest {
     fun `given a number of artifacts per page that is higher than or equal to all matched artifacts number, then verify we have exactly one page`(
         additionalValue: Int
     ) {
-        sut = SearchResultsListState(fakeArtifacts, fakeArtifacts.size, fakeArtifacts.size + additionalValue)
+        sut = SearchResultsListState(fakeArtifacts.size, fakeArtifacts.size + additionalValue)
 
         assertThat(sut.currentPage).isEqualTo(1..fakeArtifacts.size)
-        assertThat(sut.currentPageArtifacts).isEqualTo(fakeArtifacts)
+        assertThat(sut.getCurrentPageArtifactsOf(fakeArtifacts)).isEqualTo(fakeArtifacts)
         assertThat(sut.isFirstPage).isTrue()
         assertThat(sut.isLastPage).isTrue()
     }
@@ -34,11 +34,11 @@ class SearchResultsListStateTest {
             addAll(fakeArtifacts)
         }
         val numberOfArtifactsPerPage = artifacts.size - 11
-        sut = SearchResultsListState(artifacts, artifacts.size, numberOfArtifactsPerPage)
+        sut = SearchResultsListState(artifacts.size, numberOfArtifactsPerPage)
 
         fun assertWeAreOnFirstPage() {
             assertThat(sut.currentPage).isEqualTo(1..numberOfArtifactsPerPage)
-            assertThat(sut.currentPageArtifacts).isEqualTo(artifacts.subList(0, numberOfArtifactsPerPage))
+            assertThat(sut.getCurrentPageArtifactsOf(artifacts)).isEqualTo(artifacts.subList(0, numberOfArtifactsPerPage))
             assertThat(sut.isFirstPage).isTrue()
             assertThat(sut.isLastPage).isFalse()
         }
@@ -48,7 +48,7 @@ class SearchResultsListStateTest {
 
         fun assertWeAreOnSecondPage() {
             assertThat(sut.currentPage).isEqualTo((numberOfArtifactsPerPage + 1)..(numberOfArtifactsPerPage * 2))
-            assertThat(sut.currentPageArtifacts).isEqualTo(artifacts.subList(numberOfArtifactsPerPage, (numberOfArtifactsPerPage * 2)))
+            assertThat(sut.getCurrentPageArtifactsOf(artifacts)).isEqualTo(artifacts.subList(numberOfArtifactsPerPage, (numberOfArtifactsPerPage * 2)))
             assertThat(sut.isFirstPage).isFalse()
             assertThat(sut.isLastPage).isFalse()
         }
@@ -58,7 +58,7 @@ class SearchResultsListStateTest {
 
         // last page
         assertThat(sut.currentPage).isEqualTo((numberOfArtifactsPerPage * 2 + 1)..(numberOfArtifactsPerPage * 2 + 1))
-        assertThat(sut.currentPageArtifacts).isEqualTo(listOf(artifacts[artifacts.lastIndex]))
+        assertThat(sut.getCurrentPageArtifactsOf(artifacts)).isEqualTo(listOf(artifacts[artifacts.lastIndex]))
         assertThat(sut.isFirstPage).isFalse()
         assertThat(sut.isLastPage).isTrue()
 
