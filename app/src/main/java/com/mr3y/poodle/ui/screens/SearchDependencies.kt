@@ -86,8 +86,6 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import java.time.ZonedDateTime
 
-const val DefaultPageSize = 20
-
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun SearchDependenciesScreen(viewModel: SearchScreenViewModel = viewModel()) {
@@ -282,7 +280,7 @@ private fun Empty(modifier: Modifier = Modifier) {
 
 @Composable
 private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier = Modifier) {
-    val page = remember(artifacts) { mutableStateOf(1..artifacts.size.coerceAtMost(DefaultPageSize)) }
+    val pagesState = rememberSearchResultsListState(artifacts = artifacts)
     Box(
         modifier = modifier.imePadding()
     ) {
@@ -299,7 +297,7 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                         .fillMaxWidth()
                         .padding(top = 8.dp, start = 8.dp, end = 8.dp)
                 ) {
-                    Text(text = "Found ${artifacts.size} artifacts that matches your search")
+                    Text(text = "Found ${pagesState.totalNumOfAllMatchedArtifacts} artifacts that matches your search")
                     Row(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
@@ -307,8 +305,8 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Displaying artifacts: ${page.value.first} - ${page.value.last}")
-                        if (artifacts.size > DefaultPageSize) {
+                        Text(text = "Displaying artifacts: ${pagesState.currentPage.first} - ${pagesState.currentPage.last}")
+                        if (pagesState.totalNumOfAllMatchedArtifacts > pagesState.numOfArtifactsPerPage) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -318,14 +316,8 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                                         .size(64.dp)
                                         .clip(CircleShape)
                                         .semantics { },
-                                    onClick = {
-                                        page.value = if (artifacts.size == page.value.last) {
-                                            val subtracted = if (artifacts.size % DefaultPageSize == 0) DefaultPageSize else (artifacts.size % DefaultPageSize)
-                                            (page.value.first - DefaultPageSize)..(page.value.last - subtracted)
-                                        } else
-                                            (page.value.first - DefaultPageSize)..(page.value.last - DefaultPageSize)
-                                    },
-                                    enabled = page.value.first > 1
+                                    onClick = pagesState::backToThePreviousPage,
+                                    enabled = !pagesState.isFirstPage
                                 ) {
                                     Icon(
                                         painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowLeft),
@@ -338,13 +330,8 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                                         .size(64.dp)
                                         .clip(CircleShape)
                                         .semantics { },
-                                    onClick = {
-                                        page.value = if ((artifacts.size - page.value.last) < DefaultPageSize)
-                                            (page.value.last + 1)..(artifacts.size)
-                                        else
-                                            (page.value.first + DefaultPageSize)..(page.value.last + DefaultPageSize)
-                                    },
-                                    enabled = page.value.last < artifacts.size
+                                    onClick = pagesState::goToNextPage,
+                                    enabled = !pagesState.isLastPage
                                 ) {
                                     Icon(
                                         painter = rememberVectorPainter(image = Icons.Filled.KeyboardArrowRight),
@@ -358,7 +345,7 @@ private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier =
                     Divider()
                 }
             }
-            items(artifacts.slice((page.value.first - 1) until page.value.last)) { artifact ->
+            items(pagesState.currentPageArtifacts) { artifact ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
