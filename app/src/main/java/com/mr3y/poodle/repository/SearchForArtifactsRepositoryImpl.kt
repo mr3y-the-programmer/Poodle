@@ -1,6 +1,7 @@
 package com.mr3y.poodle.repository
 
 import androidx.annotation.VisibleForTesting
+import com.mr3y.poodle.network.DefaultMavenCentralLimit
 import com.mr3y.poodle.network.datasources.JitPack
 import com.mr3y.poodle.network.datasources.MavenCentral
 import com.mr3y.poodle.network.models.JitPackResponse
@@ -29,6 +30,8 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
 
     @VisibleForTesting
     internal var mavenCentralCachedSearchResult: SearchResult? = null
+
+    private var metadata: Metadata? = null
 
     override fun searchByQuery(
         searchQuery: SearchQuery,
@@ -61,7 +64,10 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
                 containsClassFullyQualifiedName = searchQuery.containsClassFullyQualifiedName
             }.map {
                 val data = when (it) {
-                    is Result.Success -> { Result.Success(it.data.toArtifacts()) }
+                    is Result.Success -> {
+                        metadata = if (searchQuery.limit != DefaultMavenCentralLimit) null else Metadata(it.data.response.numFound)
+                        Result.Success(it.data.toArtifacts())
+                    }
                     is Result.Error -> { it }
                     is Result.Loading -> { it }
                 }
@@ -91,6 +97,8 @@ class SearchForArtifactsRepositoryImpl @Inject constructor(
             else -> jitPackArtifacts
         }
     }
+
+    override fun getSearchResultMetadata(): Metadata? = metadata
 
     private fun MavenCentralResponse.toArtifacts(): List<Artifact.MavenCentralArtifact> {
         return response.docs.map {

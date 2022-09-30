@@ -77,7 +77,7 @@ class MavenCentralImplTest {
 
         @Test
         fun `given a normal serialized response, then verifies it deserializes the response correctly`() = runTest {
-            onRequest("$mavenCentralEndpointUrl?rows=200&wt=json") {
+            onRequest("$mavenCentralEndpointUrl?rows=200&start=0&wt=json") {
                 respondOkWithContent(fakeMavenCentralSerializedResponse)
             }
             sut.getArtifacts {}.test {
@@ -90,7 +90,7 @@ class MavenCentralImplTest {
         @Test
         fun `given a malformed serialized response, then verifies it catches & emits the error downstream`() = runTest {
             val (text, groupId, limit) = arrayOf("compose", "com.google.*", "20")
-            onRequest("$mavenCentralEndpointUrl?q=$text&q:$groupId&rows=$limit&wt=json") {
+            onRequest("$mavenCentralEndpointUrl?q=$text&q:$groupId&rows=$limit&start=0&wt=json") {
                 respondOkWithContent(invalidMavenCentralSerializedResponse)
             }
             sut.getArtifacts {
@@ -107,7 +107,7 @@ class MavenCentralImplTest {
 
         @Test
         fun `given an error response from server, then verifies it catches & emits the error downstream`() = runTest {
-            onRequest("$mavenCentralEndpointUrl?rows=200&wt=json") {
+            onRequest("$mavenCentralEndpointUrl?rows=200&start=0&wt=json") {
                 respondError(HttpStatusCode.NotFound)
             }
             sut.getArtifacts {}.test {

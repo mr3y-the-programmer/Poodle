@@ -2,6 +2,7 @@ package com.mr3y.poodle.domain
 
 import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.repository.Artifact
+import com.mr3y.poodle.repository.Metadata
 import com.mr3y.poodle.repository.SearchForArtifactsRepository
 import com.mr3y.poodle.repository.SearchQuery
 import com.mr3y.poodle.repository.SearchResult
@@ -22,11 +23,14 @@ class SearchForArtifactsUseCase @Inject constructor(
             isSearchOnJitPackEnabled
         )
     }
+
+    fun getAdditionalMetadata() = searchForArtifactsRepository.getSearchResultMetadata()
 }
 
 data class SearchUiState(
     val mavenCentralArtifacts: Result<List<Artifact>>? = null,
     val jitPackArtifacts: Result<List<Artifact>>? = null,
+    val metadata: Metadata? = null
 ) {
     companion object {
         val Initial = SearchUiState()

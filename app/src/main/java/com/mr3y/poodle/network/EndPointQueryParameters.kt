@@ -11,7 +11,7 @@ sealed interface EndPointQueryParameters {
     fun clearQueryParameters()
 }
 
-private const val DefaultMavenCentralLimit = 200
+const val DefaultMavenCentralLimit = 200
 
 object MavenCentralQueryParameters : EndPointQueryParameters {
 
@@ -19,12 +19,17 @@ object MavenCentralQueryParameters : EndPointQueryParameters {
 
     override var limit = DefaultMavenCentralLimit
         set(value) {
-            field = if (value <= 0) DefaultMavenCentralLimit else value
+            field = if (value <= 0 || value > DefaultMavenCentralLimit) DefaultMavenCentralLimit else value
         }
 
     override var text = ""
 
     var packaging = ""
+
+    var start = 0
+        set(value) {
+            field = value.coerceAtLeast(0)
+        }
 
     var tags: Set<String> = emptySet()
 
@@ -43,7 +48,7 @@ object MavenCentralQueryParameters : EndPointQueryParameters {
     }
 }
 
-private const val DefaultJitPackLimit = 50
+const val DefaultJitPackLimit = 50
 
 object JitPackQueryParameters : EndPointQueryParameters {
 

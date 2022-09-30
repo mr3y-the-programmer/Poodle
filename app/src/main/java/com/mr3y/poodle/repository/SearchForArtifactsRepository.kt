@@ -11,4 +11,6 @@ interface SearchForArtifactsRepository {
         searchOnMaven: Boolean = true,
         searchOnJitPack: Boolean = true,
     ): Flow<SearchResult?>
+
+    fun getSearchResultMetadata(): Metadata?
 }
