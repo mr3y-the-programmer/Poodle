@@ -34,6 +34,8 @@ class SearchResultsListState(
     val isLastPage by derivedStateOf { currentPage.last == totalNumOfAllMatchedArtifacts }
 
     fun goToNextPage() {
+        if (isLastPage) return
+
         currentPage = if ((totalNumOfAllMatchedArtifacts - currentPage.last) < numOfArtifactsPerPage)
             (currentPage.last + 1)..(totalNumOfAllMatchedArtifacts)
         else
@@ -41,6 +43,8 @@ class SearchResultsListState(
     }
 
     fun backToThePreviousPage() {
+        if (isFirstPage) return
+
         currentPage = if (totalNumOfAllMatchedArtifacts == currentPage.last) {
             val subtracted = if (totalNumOfAllMatchedArtifacts % numOfArtifactsPerPage == 0) numOfArtifactsPerPage else (totalNumOfAllMatchedArtifacts % numOfArtifactsPerPage)
             (currentPage.first - numOfArtifactsPerPage)..(currentPage.last - subtracted)

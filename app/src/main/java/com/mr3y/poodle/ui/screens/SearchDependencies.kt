@@ -75,6 +75,7 @@ import com.mr3y.poodle.domain.SearchUiState
 import com.mr3y.poodle.network.models.Result
 import com.mr3y.poodle.presentation.SearchScreenViewModel
 import com.mr3y.poodle.repository.Artifact
+import com.mr3y.poodle.repository.Metadata
 import com.mr3y.poodle.repository.SearchQuery
 import com.mr3y.poodle.ui.components.AnimatedTopAppBar
 import com.mr3y.poodle.ui.components.ArtworkWithText
@@ -179,6 +180,7 @@ internal fun SearchDependencies(
                 )
                 TabContent(
                     state.getArtifactsBasedOnIndex(selectedTabIndex.value),
+                    state.metadata,
                     modifier = Modifier
                         .padding(contentPadding)
                         .padding(top = tabRowHeight)
@@ -230,6 +232,7 @@ fun TabRow(
 @Composable
 fun TabContent(
     content: Result<List<Artifact>>,
+    metadata: Metadata?,
     modifier: Modifier = Modifier
 ) {
     when (content) {
@@ -248,7 +251,7 @@ fun TabContent(
             if (artifacts.isEmpty()) {
                 Empty(modifier = modifier)
             } else {
-                DisplaySearchResults(artifacts = artifacts, modifier = modifier)
+                DisplaySearchResults(artifacts = artifacts, metadata, modifier = modifier)
             }
         }
         is Result.Error -> {
@@ -280,8 +283,18 @@ private fun Empty(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun DisplaySearchResults(artifacts: List<Artifact>, modifier: Modifier = Modifier) {
-    val pagesState = rememberSearchResultsListState(artifacts = artifacts)
+private fun DisplaySearchResults(
+    artifacts: List<Artifact>,
+    metadata: Metadata?,
+    modifier: Modifier = Modifier
+) {
+    val pagesState = rememberSearchResultsListState(
+        artifacts = artifacts,
+        totalNumOfAllMatchedArtifacts = when (artifacts.first()) {
+            is Artifact.JitPackArtifact -> artifacts.size
+            is Artifact.MavenCentralArtifact -> metadata?.totalNumOfMatchedMavenCentralArtifacts ?: artifacts.size
+        }
+    )
     key(artifacts) {
         Box(
             modifier = modifier.imePadding()

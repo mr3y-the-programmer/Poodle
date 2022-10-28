@@ -30,6 +30,7 @@ class MavenCentralImpl @Inject constructor(
                 val query = MavenCentralQueryParameters.getNormalizedStringQueryParameter()
                 parameter("q", query)
                 parameter("rows", requestQueryParams.limit.takeIf { it > 0 && it != Int.MAX_VALUE })
+                parameter("start", requestQueryParams.start)
                 parameter("wt", "json")
             }.body()
             Napier.d("$response")

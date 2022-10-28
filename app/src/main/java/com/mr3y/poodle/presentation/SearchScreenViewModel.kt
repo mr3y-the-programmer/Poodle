@@ -126,7 +126,8 @@ class SearchScreenViewModel @Inject constructor(
         }
         return SearchUiState(
             mavenCentralArtifacts = mavenCentralArtifacts,
-            jitPackArtifacts = jitPackArtifacts
+            jitPackArtifacts = jitPackArtifacts,
+            metadata = searchForArtifactsUseCase.getAdditionalMetadata()
         )
     }
 }

@@ -24,6 +24,16 @@ class SearchResultsListStateTest {
         assertThat(sut.getCurrentPageArtifactsOf(fakeArtifacts)).isEqualTo(fakeArtifacts)
         assertThat(sut.isFirstPage).isTrue()
         assertThat(sut.isLastPage).isTrue()
+
+        // should be no-op
+        sut.goToNextPage()
+        assertThat(sut.currentPage).isEqualTo(1..fakeArtifacts.size)
+        assertThat(sut.getCurrentPageArtifactsOf(fakeArtifacts)).isEqualTo(fakeArtifacts)
+
+        // should be no-op
+        sut.backToThePreviousPage()
+        assertThat(sut.currentPage).isEqualTo(1..fakeArtifacts.size)
+        assertThat(sut.getCurrentPageArtifactsOf(fakeArtifacts)).isEqualTo(fakeArtifacts)
     }
 
     @Test

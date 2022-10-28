@@ -1,5 +1,6 @@
 package com.mr3y.poodle.repository.fixtures
 
+import com.mr3y.poodle.repository.Metadata
 import com.mr3y.poodle.repository.SearchForArtifactsRepository
 import com.mr3y.poodle.repository.SearchQuery
 import com.mr3y.poodle.repository.SearchResult
@@ -15,5 +16,9 @@ class FakeSearchForArtifactsRepository(private val seed: Flow<SearchResult>) : S
         searchOnJitPack: Boolean
     ): Flow<SearchResult> {
         return seed
+    }
+
+    override fun getSearchResultMetadata(): Metadata? {
+        return null
     }
 }
