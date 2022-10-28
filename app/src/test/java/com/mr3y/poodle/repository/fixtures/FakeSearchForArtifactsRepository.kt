@@ -18,7 +18,7 @@ class FakeSearchForArtifactsRepository(private val seed: Flow<SearchResult>) : S
         return seed
     }
 
-    override fun getSearchResultMetadata(): Metadata {
-        TODO("Not yet implemented")
+    override fun getSearchResultMetadata(): Metadata? {
+        return null
     }
 }
