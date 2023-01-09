@@ -2,6 +2,7 @@
 A simple android client app to search for artifacts published on MavenCentral & JitPack repositories.
 
 ## Demo
+https://user-images.githubusercontent.com/26522145/211366909-be74179c-a79e-4ff9-9340-f2c30eb43443.mp4
 
 ## Tech stack
 * UI is built using Jetpack compose UI.
